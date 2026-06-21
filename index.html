@@ -186,6 +186,26 @@ async function apiRead(resource,limit=1){
   return await r.json();
 }
 
+async function apiPublish(resource,data){
+  const c=cfg();
+  if(!c.token)throw new Error('Channel token belum diisi.');
+  const url=`${c.apiBase}/data/publish/${encodeURIComponent(c.channel)}/${encodeURIComponent(resource)}`;
+  const r=await fetch(url,{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'X-Auth-Token':c.token
+    },
+    body:JSON.stringify({data})
+  });
+  if(!r.ok){
+    let body='';
+    try{body=await r.text()}catch(e){}
+    throw new Error(`Publish ${resource} gagal: HTTP ${r.status}${body?' - '+body:''}`);
+  }
+  try{return await r.json()}catch(e){return await r.text()}
+}
+
 function firstData(records){
   if(!Array.isArray(records)||!records.length)return null;
   const r=records[0];
