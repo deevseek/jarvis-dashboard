@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Jarvis Emergency Control</title>
+<title>Jarvis Emergency Control - Online Fix</title>
 <style>
 :root{--bg:#030712;--panel:#07111f;--panel2:#0b1b2d;--line:#14324f;--text:#e5f8ff;--muted:#8cb4d6;--cyan:#38d7ff;--green:#32f087;--yellow:#ffd166;--red:#ff5c7a;--purple:#a78bfa}*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:radial-gradient(circle at top left,#0c3457 0,#06111f 38%,#02050d 100%);color:var(--text);min-height:100vh}.app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}.side{background:rgba(3,12,24,.86);border-right:1px solid var(--line);padding:24px;position:sticky;top:0;height:100vh}.brand{font-size:28px;font-weight:900;letter-spacing:1.5px;line-height:1;color:#9eeaff;text-shadow:0 0 22px rgba(56,215,255,.35)}.subtitle{font-size:12px;color:var(--muted);margin-top:10px;letter-spacing:.9px}.nav{margin-top:28px;display:grid;gap:10px}.nav button{border:1px solid #1e456a;background:#081a2e;color:var(--text);padding:13px 14px;border-radius:13px;text-align:left;font-weight:800;cursor:pointer}.nav button.active,.nav button:hover{background:#0d2946;box-shadow:0 0 18px rgba(56,215,255,.16)}.device{margin-top:28px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#071727}.device h3{margin:0 0 10px}.main{padding:26px}.top{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);border-radius:18px;background:rgba(7,17,31,.82);padding:20px 22px;margin-bottom:20px}.top h1{margin:0;font-size:33px;letter-spacing:1px}.pill{border-radius:999px;padding:9px 14px;font-weight:900;border:1px solid #276449;background:#0b3a25;color:var(--green)}.pill.off{background:#351017;color:var(--red);border-color:#7c1e32}.pill.warn{background:#3a2f0b;color:var(--yellow);border-color:#8b6d1d}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.card{border:1px solid var(--line);border-radius:18px;background:rgba(7,17,31,.88);padding:18px;box-shadow:0 0 30px rgba(0,120,255,.07)}.card h3{margin:0 0 10px;font-size:15px;color:#ddf7ff}.muted{color:var(--muted);font-size:13px}.big{font-size:30px;font-weight:900;color:#9eeaff;text-shadow:0 0 15px rgba(56,215,255,.25)}.section{display:none}.section.active{display:block}.section-title{display:flex;align-items:center;justify-content:space-between;margin:18px 0 12px}.actions{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.btn{border:1px solid #23527d;background:#081a2e;color:#e5f8ff;padding:16px;border-radius:15px;font-weight:900;cursor:pointer}.btn:hover{filter:brightness(1.22)}.btn.green{color:var(--green)}.btn.yellow{color:var(--yellow)}.btn.red{color:var(--red)}.btn.cyan{color:var(--cyan)}.btn:disabled{opacity:.45;cursor:not-allowed}.form{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field label{display:block;margin-bottom:6px;color:var(--muted);font-size:12px}.field input{width:100%;border:1px solid #24517a;background:#030b15;color:var(--text);border-radius:12px;padding:13px}.bar{height:12px;background:#0d2b42;border-radius:99px;overflow:hidden;margin:9px 0}.bar>div{height:100%;background:linear-gradient(90deg,#22c55e,#38d7ff);width:0}.alert-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.alert-card{position:relative;overflow:hidden;border:1px solid rgba(56,215,255,.24);border-radius:18px;background:linear-gradient(135deg,rgba(7,17,31,.94),rgba(2,8,18,.96));padding:16px}.alert-card:before{content:"";position:absolute;inset:-50%;background:radial-gradient(circle,rgba(56,215,255,.13),transparent 45%);transform:translateX(-40%)}.alert-card>*{position:relative}.badge{border:1px solid;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:900}.ok{color:var(--green)}.warning{color:var(--yellow)}.critical{color:var(--red)}.info{color:var(--cyan)}.table{width:100%;border-collapse:collapse}.table td{border-bottom:1px solid #112d48;padding:10px;color:#b9d8ee}.toast{position:fixed;right:18px;bottom:18px;max-width:420px;z-index:99}.toast .alert-card{margin-top:10px}.raw{white-space:pre-wrap;word-break:break-word;background:#020812;border:1px solid #14324f;border-radius:14px;padding:13px;color:#b9f6c9;max-height:340px;overflow:auto}code{background:#071727;border:1px solid #14324f;border-radius:6px;padding:1px 6px;color:#bff4ff}@media(max-width:1100px){.app{grid-template-columns:1fr}.side{height:auto;position:relative}.grid,.actions,.alert-grid,.form{grid-template-columns:1fr}.top{align-items:flex-start;gap:12px;flex-direction:column}.top h1{font-size:25px}}
 
@@ -174,15 +174,126 @@ function guarded(command,duration){
 function saveSettings(){const c=cfg();localStorage.setItem('jarvis-final-settings',JSON.stringify(c));modalOpen({type:'success',title:'Settings Disimpan',subtitle:'Local Browser Storage',body:'<div class=\"modal-box\">Konfigurasi dashboard berhasil disimpan di browser ini.</div>',actions:[{label:'Tutup',cancel:true},{label:'Refresh Sekarang',type:'success',onClick:()=>refreshAll()}]})}
 function clearSettings(){modalOpen({type:'warning',title:'Hapus Settings Lokal',subtitle:'Konfirmasi tindakan',body:'<div class=\"modal-box\">Semua setting lokal dashboard akan dihapus dari browser ini. Lanjutkan?</div>',actions:[{label:'Batal',cancel:true},{label:'Hapus',type:'warning',onClick:()=>{localStorage.removeItem('jarvis-final-settings');$('token').value='';$('channel').value='jarvis';$('cmdAuth').value='';$('apiBase').value='https://api.beebotte.com/v1';modalAlert('success','Settings Dihapus','Semua konfigurasi lokal dashboard sudah dihapus.')}}]})}
 function loadSettings(){try{const s=JSON.parse(localStorage.getItem('jarvis-final-settings')||'{}');if(s.token)$('token').value=s.token;if(s.channel)$('channel').value=s.channel;if(s.cmdAuth)$('cmdAuth').value=s.cmdAuth;if(s.apiBase)$('apiBase').value=s.apiBase}catch(e){}}
-async function apiRead(resource,limit=1){const c=cfg();if(!c.token)throw new Error('Channel token belum diisi.');const url=`${c.apiBase}/data/read/${encodeURIComponent(c.channel)}/${encodeURIComponent(resource)}?limit=${limit}&source=raw`;const r=await fetch(url,{headers:{'Content-Type':'application/json','X-Auth-Token':c.token}});if(!r.ok)throw new Error(`Read ${resource} gagal: HTTP ${r.status}`);return await r.json()}
-async function apiPublish(resource,data){const c=cfg();if(!c.token)throw new Error('Channel token belum diisi.');const url=`${c.apiBase}/data/publish/${encodeURIComponent(c.channel)}/${encodeURIComponent(resource)}`;const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','X-Auth-Token':c.token},body:JSON.stringify({data})});if(!r.ok)throw new Error(`Publish ${resource} gagal: HTTP ${r.status} ${await r.text()}`);return await r.text()}
-function firstData(records){if(!Array.isArray(records)||!records.length)return null;const r=records[0];return r.data!==undefined?r.data:r}
-function tsOf(records){if(!Array.isArray(records)||!records.length)return 0;return records[0].ts || records[0].timestamp || 0}
-async function refreshAll(){try{const [st,hb,tel,res,al]=await Promise.allSettled(['status','heartbeat','telemetry','result','alerts'].map(x=>apiRead(x,1)));if(st.status==='fulfilled'){state.status=firstData(st.value);state.statusTs=tsOf(st.value)}if(hb.status==='fulfilled'){state.heartbeat=firstData(hb.value);state.heartbeatTs=tsOf(hb.value)}if(tel.status==='fulfilled'){state.telemetry=firstData(tel.value);state.telemetryTs=tsOf(tel.value)}if(res.status==='fulfilled'){state.result=firstData(res.value);state.resultTs=tsOf(res.value)}if(al.status==='fulfilled'){state.alerts=firstData(al.value);state.alertTs=tsOf(al.value)}state.lastRefresh=now();render();}catch(e){toast('critical','Refresh gagal',e.message);renderOffline(e.message)}}
-function render(){const hb=state.heartbeat||state.status||{};const tel=state.telemetry||{};const age=state.heartbeatTs?Math.round((Date.now()-state.heartbeatTs)/1000):999999;const online=age<45 && hb.online!==false;$('onlinePill').className='pill '+(online?'':'off');$('onlinePill').textContent=online?'ONLINE':'OFFLINE';$('devName').textContent=hb.device||'JARVIS';$('fw').textContent=hb.firmware||tel.runtime?.firmware||'-';$('hbAge').textContent=state.heartbeatTs?`${age}s`:'-';$('wifiRssi').textContent=(hb.rssi??tel.wifi?.rssi_dbm??'-')+' dBm';$('wifiIp').textContent=hb.ip||tel.wifi?.local_ip||'-';$('uptime').textContent=uptimeText(hb.uptime_sec||tel.runtime?.uptime_sec||0);$('sideDevice').innerHTML=`IP: ${hb.ip||'-'}<br>RSSI: ${hb.rssi??'-'} dBm<br>FW: ${hb.firmware||'-'}<br><span class="${online?'ok':'critical'}">${online?'CONNECTED':'OFFLINE'}</span>`;renderTelemetry(tel);renderAlerts();$('lastResult').textContent=state.result?JSON.stringify(state.result,null,2):'Belum ada result.'}
+async function apiRead(resource,limit=1){
+  const c=cfg();
+  if(!c.token)throw new Error('Channel token belum diisi.');
+
+  // Jangan pakai source=raw, karena source=raw sering menghilangkan timestamp Beebotte.
+  // Timestamp dipakai untuk menentukan ONLINE/OFFLINE secara akurat.
+  const url=`${c.apiBase}/data/read/${encodeURIComponent(c.channel)}/${encodeURIComponent(resource)}?limit=${limit}`;
+  const r=await fetch(url,{headers:{'Content-Type':'application/json','X-Auth-Token':c.token}});
+  if(!r.ok)throw new Error(`Read ${resource} gagal: HTTP ${r.status}`);
+  return await r.json();
+}
+
+function firstData(records){
+  if(!Array.isArray(records)||!records.length)return null;
+  const r=records[0];
+
+  // Format normal Beebotte: [{ data:{...}, ts:... }]
+  // Format raw / payload lama: [{ data:{ data:{...}, write:true } }]
+  if(r && r.data!==undefined){
+    if(r.data && typeof r.data==='object' && r.data.data!==undefined) return r.data.data;
+    return r.data;
+  }
+  return r;
+}
+
+function parseTs(v){
+  if(v===undefined||v===null||v==='')return 0;
+  if(typeof v==='number'){
+    // Beebotte bisa mengembalikan detik atau millisecond.
+    return v < 100000000000 ? v*1000 : v;
+  }
+  if(typeof v==='string'){
+    const asNum=Number(v);
+    if(!Number.isNaN(asNum))return parseTs(asNum);
+    const d=Date.parse(v);
+    return Number.isNaN(d)?0:d;
+  }
+  return 0;
+}
+
+function tsOf(records){
+  if(!Array.isArray(records)||!records.length)return 0;
+  const r=records[0]||{};
+  const direct = r.ts ?? r.timestamp ?? r.createdAt ?? r.created_at ?? r.time ?? r.date;
+  const nested = r.data && typeof r.data==='object' ? (r.data.ts ?? r.data.timestamp ?? r.data.time ?? r.data.date) : 0;
+  return parseTs(direct) || parseTs(nested);
+}
+
+function latestDeviceTs(){
+  return Math.max(Number(state.heartbeatTs||0),Number(state.statusTs||0),Number(state.telemetryTs||0));
+}
+
+function hasDeviceData(){
+  return !!(state.heartbeat || state.status || state.telemetry);
+}
+
+async function refreshAll(){
+  try{
+    const resources=['status','heartbeat','telemetry','result','alerts'];
+    const [st,hb,tel,res,al]=await Promise.allSettled(resources.map(x=>apiRead(x,1)));
+    const readTime=now();
+
+    if(st.status==='fulfilled'){state.status=firstData(st.value);state.statusTs=tsOf(st.value)||(state.status?readTime:0)}
+    if(hb.status==='fulfilled'){state.heartbeat=firstData(hb.value);state.heartbeatTs=tsOf(hb.value)||(state.heartbeat?readTime:0)}
+    if(tel.status==='fulfilled'){state.telemetry=firstData(tel.value);state.telemetryTs=tsOf(tel.value)||(state.telemetry?readTime:0)}
+    if(res.status==='fulfilled'){state.result=firstData(res.value);state.resultTs=tsOf(res.value)||(state.result?readTime:0)}
+    if(al.status==='fulfilled'){state.alerts=firstData(al.value);state.alertTs=tsOf(al.value)||(state.alerts?readTime:0)}
+
+    state.lastRefresh=readTime;
+    render();
+  }catch(e){
+    toast('critical','Refresh gagal',e.message);
+    renderOffline(e.message);
+  }
+}
+
+function render(){
+  const hb=state.heartbeat||state.status||{};
+  const tel=state.telemetry||{};
+  const latestTs=latestDeviceTs();
+  const age=latestTs?Math.max(0,Math.round((Date.now()-latestTs)/1000)):999999;
+
+  // Beebotte kadang tidak mengirim timestamp saat data dibaca dari REST.
+  // Kalau data berhasil terbaca dalam refresh terakhir, anggap online kecuali payload menyatakan online:false.
+  const recentlyRead = state.lastRefresh && (Date.now()-state.lastRefresh)<15000 && hasDeviceData();
+  const online=(age<120 || recentlyRead) && hb.online!==false;
+
+  $('onlinePill').className='pill '+(online?'':'off');
+  $('onlinePill').textContent=online?'ONLINE':'OFFLINE';
+  $('devName').textContent=hb.device||'JARVIS';
+  $('fw').textContent=hb.firmware||tel.runtime?.firmware||'-';
+  $('hbAge').textContent=latestTs?`${age}s`:(recentlyRead?'LIVE':'-');
+  $('wifiRssi').textContent=(hb.rssi??tel.wifi?.rssi_dbm??'-')+' dBm';
+  $('wifiIp').textContent=hb.ip||tel.wifi?.local_ip||'-';
+  $('uptime').textContent=uptimeText(hb.uptime_sec||tel.runtime?.uptime_sec||0);
+  $('sideDevice').innerHTML=`IP: ${hb.ip||tel.wifi?.local_ip||'-'}<br>RSSI: ${hb.rssi??tel.wifi?.rssi_dbm??'-'} dBm<br>FW: ${hb.firmware||tel.runtime?.firmware||'-'}<br><span class="${online?'ok':'critical'}">${online?'CONNECTED':'OFFLINE'}</span>`;
+  renderTelemetry(tel);
+  renderAlerts();
+  $('lastResult').textContent=state.result?JSON.stringify(state.result,null,2):'Belum ada result.'
+}
+
 function renderOffline(msg){$('onlinePill').className='pill off';$('onlinePill').textContent='ERROR';$('sideDevice').innerHTML=`<span class="critical">${msg}</span>`}
 function renderTelemetry(t){const mem=t.memory||{}, hw=t.hardware||{}, fl=t.flash||{}, sk=t.sketch||{}, wf=t.wifi||{};const hp=Number(mem.heap_used_percent||0);$('heapPct').textContent=hp?hp.toFixed(1)+'%':'-';$('heapBar').style.width=Math.min(100,hp)+'%';$('heapText').textContent=`Used ${bytes(mem.heap_used_bytes)} / ${bytes(mem.heap_total_bytes)} • Free ${bytes(mem.heap_free_bytes)}`;$('chip').textContent=hw.chip_model||'-';$('chipText').textContent=`Core ${hw.chip_cores||'-'} • ${hw.cpu_freq_mhz||'-'} MHz • SDK ${hw.sdk_version||'-'}`;$('flash').textContent=bytes(fl.flash_size_bytes);$('flashText').textContent=`Sketch ${bytes(sk.sketch_size_bytes)} • Free ${bytes(sk.free_sketch_space_bytes)}`;$('net').textContent=wf.status||'-';$('netText').textContent=`SSID ${wf.ssid||'-'} • IP ${wf.local_ip||'-'} • CH ${wf.channel||'-'}`;$('rawTelemetry').textContent=t?JSON.stringify(t,null,2):'-'}
-function renderAlerts(){const arr=[];const hb=state.heartbeat||state.status||{};const tel=state.telemetry||{};const age=state.heartbeatTs?Math.round((Date.now()-state.heartbeatTs)/1000):999999;if(age>45)arr.push({level:'critical',title:'Jarvis Offline',message:'Heartbeat tidak diterima lebih dari 45 detik.',source:'Dashboard'});else arr.push({level:'ok',title:'Jarvis Online',message:'Heartbeat diterima normal dari Beebotte.',source:'Beebotte'});if((hb.rssi||tel.wifi?.rssi_dbm||0)<-75)arr.push({level:'warning',title:'Sinyal WiFi Lemah',message:`RSSI ${hb.rssi||tel.wifi?.rssi_dbm} dBm`,source:'WiFi'});if(Number(tel.memory?.heap_used_percent||0)>80)arr.push({level:'warning',title:'Heap Tinggi',message:`Heap ${tel.memory.heap_used_percent}%`,source:'ESP32'});if(state.alerts)arr.push(state.alerts);$('alertBox').innerHTML=arr.map(a=>{const lv=norm(a.level);return `<div class="alert-card"><div style="display:flex;justify-content:space-between;gap:12px"><div><h3>${icon(lv)} ${esc(a.title||'Alert')}</h3><div class="muted">${esc(a.message||'-')}</div><div class="muted" style="margin-top:10px">${esc(a.source||'Jarvis')} • ${new Date().toLocaleTimeString()}</div></div><span class="badge ${lv}">${lv.toUpperCase()}</span></div></div>`}).join('')}
+function renderAlerts(){
+  const arr=[];
+  const hb=state.heartbeat||state.status||{};
+  const tel=state.telemetry||{};
+  const latestTs=latestDeviceTs();
+  const age=latestTs?Math.max(0,Math.round((Date.now()-latestTs)/1000)):999999;
+  const recentlyRead = state.lastRefresh && (Date.now()-state.lastRefresh)<15000 && hasDeviceData();
+
+  if(age>120 && !recentlyRead)arr.push({level:'critical',title:'Jarvis Offline',message:'Data Jarvis tidak terbaca dari Beebotte lebih dari 120 detik.',source:'Dashboard'});
+  else arr.push({level:'ok',title:'Jarvis Online',message:`Data Jarvis terbaca normal. Last seen: ${latestTs?age+' detik lalu':'live refresh'}.`,source:'Beebotte'});
+
+  if((hb.rssi||tel.wifi?.rssi_dbm||0)<-75)arr.push({level:'warning',title:'Sinyal WiFi Lemah',message:`RSSI ${hb.rssi||tel.wifi?.rssi_dbm} dBm`,source:'WiFi'});
+  if(Number(tel.memory?.heap_used_percent||0)>80)arr.push({level:'warning',title:'Heap Tinggi',message:`Heap ${tel.memory.heap_used_percent}%`,source:'ESP32'});
+  if(state.alerts)arr.push(state.alerts);
+
+  $('alertBox').innerHTML=arr.map(a=>{const lv=norm(a.level);return `<div class="alert-card"><div style="display:flex;justify-content:space-between;gap:12px"><div><h3>${icon(lv)} ${esc(a.title||'Alert')}</h3><div class="muted">${esc(a.message||'-')}</div><div class="muted" style="margin-top:10px">${esc(a.source||'Jarvis')} • ${new Date().toLocaleTimeString()}</div></div><span class="badge ${lv}">${lv.toUpperCase()}</span></div></div>`}).join('')
+}
 async function sendCommand(command,duration,opt={}){try{const c=cfg();if(!c.cmdAuth){modalAlert('warning','Command Auth Belum Diisi','Silakan isi <b>Command Auth</b> terlebih dahulu di menu Settings.');return;}modalLoading('Mengirim Command',`Mengirim command <b>${esc(command)}</b> ke Jarvis...`);const request_id='CMD-'+Date.now();const payload={request_id,auth:c.cmdAuth,command,duration_ms:duration||undefined,source:'final-dashboard'};const dangerous=['hard_reset','force_power_off','reset_wifi_config','reboot_server','power_off'];if(dangerous.includes(command))payload.confirm='YES_I_UNDERSTAND';await apiPublish('command',payload);modalOpen({type:'success',title:'Command Terkirim',subtitle:'Jarvis Command Center',body:`<div class="modal-box">Command <b>${esc(command)}</b> berhasil dikirim ke Jarvis.<div class="modal-command">Request ID: ${request_id}</div></div>`,actions:[{label:'Tutup',cancel:true},{label:'Refresh Status',type:'success',onClick:()=>refreshAll()}]});setTimeout(refreshAll,1600)}catch(e){modalOpen({type:'danger',title:'Command Gagal',subtitle:'Jarvis Command Center',body:`<div class="modal-box">${esc(e.message)}</div>`,actions:[{label:'Tutup',cancel:true}]})}}
 function toast(level,title,msg){const box=$('toast');const lv=norm(level);const div=document.createElement('div');div.className='alert-card '+lv;div.innerHTML=`<div style=\"display:flex;justify-content:space-between;gap:12px\"><div><h3>${icon(lv)} ${esc(title)}</h3><div class=\"muted\">${esc(msg)}</div></div><span class=\"badge ${lv}\">${lv.toUpperCase()}</span></div>`;box.appendChild(div);setTimeout(()=>div.remove(),6500)}
 function norm(l){l=String(l||'info').toLowerCase();if(['error','danger','fatal','critical'].includes(l))return'critical';if(['warn','warning'].includes(l))return'warning';if(['ok','success','healthy'].includes(l))return'ok';return'info'}function icon(l){return l==='critical'?'⛔':l==='warning'?'⚠️':l==='ok'?'✅':'ℹ️'}function esc(s){return String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}function bytes(v){v=Number(v)||0;if(v>=1073741824)return(v/1073741824).toFixed(2)+' GB';if(v>=1048576)return(v/1048576).toFixed(2)+' MB';if(v>=1024)return(v/1024).toFixed(2)+' KB';return v+' B'}function uptimeText(sec){sec=Number(sec)||0;let d=Math.floor(sec/86400);sec%=86400;let h=Math.floor(sec/3600);sec%=3600;let m=Math.floor(sec/60);return(d?d+'d ':'')+h+'h '+m+'m'}
