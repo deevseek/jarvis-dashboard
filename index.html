@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Jarvis Emergency Control - Online Fix</title>
+<title>Jarvis Emergency Control - Fast Realtime Polling</title>
 <style>
 :root{--bg:#030712;--panel:#07111f;--panel2:#0b1b2d;--line:#14324f;--text:#e5f8ff;--muted:#8cb4d6;--cyan:#38d7ff;--green:#32f087;--yellow:#ffd166;--red:#ff5c7a;--purple:#a78bfa}*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:radial-gradient(circle at top left,#0c3457 0,#06111f 38%,#02050d 100%);color:var(--text);min-height:100vh}.app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}.side{background:rgba(3,12,24,.86);border-right:1px solid var(--line);padding:24px;position:sticky;top:0;height:100vh}.brand{font-size:28px;font-weight:900;letter-spacing:1.5px;line-height:1;color:#9eeaff;text-shadow:0 0 22px rgba(56,215,255,.35)}.subtitle{font-size:12px;color:var(--muted);margin-top:10px;letter-spacing:.9px}.nav{margin-top:28px;display:grid;gap:10px}.nav button{border:1px solid #1e456a;background:#081a2e;color:var(--text);padding:13px 14px;border-radius:13px;text-align:left;font-weight:800;cursor:pointer}.nav button.active,.nav button:hover{background:#0d2946;box-shadow:0 0 18px rgba(56,215,255,.16)}.device{margin-top:28px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#071727}.device h3{margin:0 0 10px}.main{padding:26px}.top{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);border-radius:18px;background:rgba(7,17,31,.82);padding:20px 22px;margin-bottom:20px}.top h1{margin:0;font-size:33px;letter-spacing:1px}.pill{border-radius:999px;padding:9px 14px;font-weight:900;border:1px solid #276449;background:#0b3a25;color:var(--green)}.pill.off{background:#351017;color:var(--red);border-color:#7c1e32}.pill.warn{background:#3a2f0b;color:var(--yellow);border-color:#8b6d1d}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.card{border:1px solid var(--line);border-radius:18px;background:rgba(7,17,31,.88);padding:18px;box-shadow:0 0 30px rgba(0,120,255,.07)}.card h3{margin:0 0 10px;font-size:15px;color:#ddf7ff}.muted{color:var(--muted);font-size:13px}.big{font-size:30px;font-weight:900;color:#9eeaff;text-shadow:0 0 15px rgba(56,215,255,.25)}.section{display:none}.section.active{display:block}.section-title{display:flex;align-items:center;justify-content:space-between;margin:18px 0 12px}.actions{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.btn{border:1px solid #23527d;background:#081a2e;color:#e5f8ff;padding:16px;border-radius:15px;font-weight:900;cursor:pointer}.btn:hover{filter:brightness(1.22)}.btn.green{color:var(--green)}.btn.yellow{color:var(--yellow)}.btn.red{color:var(--red)}.btn.cyan{color:var(--cyan)}.btn:disabled{opacity:.45;cursor:not-allowed}.form{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field label{display:block;margin-bottom:6px;color:var(--muted);font-size:12px}.field input{width:100%;border:1px solid #24517a;background:#030b15;color:var(--text);border-radius:12px;padding:13px}.bar{height:12px;background:#0d2b42;border-radius:99px;overflow:hidden;margin:9px 0}.bar>div{height:100%;background:linear-gradient(90deg,#22c55e,#38d7ff);width:0}.alert-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.alert-card{position:relative;overflow:hidden;border:1px solid rgba(56,215,255,.24);border-radius:18px;background:linear-gradient(135deg,rgba(7,17,31,.94),rgba(2,8,18,.96));padding:16px}.alert-card:before{content:"";position:absolute;inset:-50%;background:radial-gradient(circle,rgba(56,215,255,.13),transparent 45%);transform:translateX(-40%)}.alert-card>*{position:relative}.badge{border:1px solid;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:900}.ok{color:var(--green)}.warning{color:var(--yellow)}.critical{color:var(--red)}.info{color:var(--cyan)}.table{width:100%;border-collapse:collapse}.table td{border-bottom:1px solid #112d48;padding:10px;color:#b9d8ee}.toast{position:fixed;right:18px;bottom:18px;max-width:420px;z-index:99}.toast .alert-card{margin-top:10px}.raw{white-space:pre-wrap;word-break:break-word;background:#020812;border:1px solid #14324f;border-radius:14px;padding:13px;color:#b9f6c9;max-height:340px;overflow:auto}code{background:#071727;border:1px solid #14324f;border-radius:6px;padding:1px 6px;color:#bff4ff}@media(max-width:1100px){.app{grid-template-columns:1fr}.side{height:auto;position:relative}.grid,.actions,.alert-grid,.form{grid-template-columns:1fr}.top{align-items:flex-start;gap:12px;flex-direction:column}.top h1{font-size:25px}}
 
@@ -126,6 +126,13 @@
 <div id="toast" class="toast"></div>
 <script>
 const state={status:null,heartbeat:null,telemetry:null,result:null,alerts:null,lastRefresh:null};
+
+// Jarvis dianggap OFFLINE kalau tidak ada data baru melewati batas ini.
+// Jika firmware heartbeat tiap 5 detik, 30 detik sudah aman.
+// Kalau jaringan sering delay, naikkan ke 45 atau 60.
+const OFFLINE_AFTER_SEC=10;
+const POLL_INTERVAL_MS=1000;
+let refreshBusy=false;
 function $(id){return document.getElementById(id)}
 function now(){return Date.now()}
 function cfg(){return{token:$('token').value.trim(),channel:$('channel').value.trim()||'jarvis',cmdAuth:$('cmdAuth').value.trim(),apiBase:($('apiBase').value.trim()||'https://api.beebotte.com/v1').replace(/\/$/,'')}}
@@ -174,14 +181,22 @@ function guarded(command,duration){
 function saveSettings(){const c=cfg();localStorage.setItem('jarvis-final-settings',JSON.stringify(c));modalOpen({type:'success',title:'Settings Disimpan',subtitle:'Local Browser Storage',body:'<div class=\"modal-box\">Konfigurasi dashboard berhasil disimpan di browser ini.</div>',actions:[{label:'Tutup',cancel:true},{label:'Refresh Sekarang',type:'success',onClick:()=>refreshAll()}]})}
 function clearSettings(){modalOpen({type:'warning',title:'Hapus Settings Lokal',subtitle:'Konfirmasi tindakan',body:'<div class=\"modal-box\">Semua setting lokal dashboard akan dihapus dari browser ini. Lanjutkan?</div>',actions:[{label:'Batal',cancel:true},{label:'Hapus',type:'warning',onClick:()=>{localStorage.removeItem('jarvis-final-settings');$('token').value='';$('channel').value='jarvis';$('cmdAuth').value='';$('apiBase').value='https://api.beebotte.com/v1';modalAlert('success','Settings Dihapus','Semua konfigurasi lokal dashboard sudah dihapus.')}}]})}
 function loadSettings(){try{const s=JSON.parse(localStorage.getItem('jarvis-final-settings')||'{}');if(s.token)$('token').value=s.token;if(s.channel)$('channel').value=s.channel;if(s.cmdAuth)$('cmdAuth').value=s.cmdAuth;if(s.apiBase)$('apiBase').value=s.apiBase}catch(e){}}
-async function apiRead(resource,limit=1){
+async function apiRead(resource,limit=3){
   const c=cfg();
   if(!c.token)throw new Error('Channel token belum diisi.');
 
   // Jangan pakai source=raw, karena source=raw sering menghilangkan timestamp Beebotte.
-  // Timestamp dipakai untuk menentukan ONLINE/OFFLINE secara akurat.
-  const url=`${c.apiBase}/data/read/${encodeURIComponent(c.channel)}/${encodeURIComponent(resource)}?limit=${limit}`;
-  const r=await fetch(url,{headers:{'Content-Type':'application/json','X-Auth-Token':c.token}});
+  // Timestamp record Beebotte dipakai untuk menentukan ONLINE/OFFLINE secara akurat.
+  // Cache buster mencegah browser/proxy menampilkan response lama.
+  const url=`${c.apiBase}/data/read/${encodeURIComponent(c.channel)}/${encodeURIComponent(resource)}?limit=${limit}&_=${Date.now()}`;
+  const r=await fetch(url,{
+    cache:'no-store',
+    headers:{
+      'Content-Type':'application/json',
+      'X-Auth-Token':c.token,
+      'Cache-Control':'no-cache'
+    }
+  });
   if(!r.ok)throw new Error(`Read ${resource} gagal: HTTP ${r.status}`);
   return await r.json();
 }
@@ -206,9 +221,16 @@ async function apiPublish(resource,data){
   try{return await r.json()}catch(e){return await r.text()}
 }
 
-function firstData(records){
+function newestRecord(records){
   if(!Array.isArray(records)||!records.length)return null;
-  const r=records[0];
+  // Ambil record dengan timestamp paling baru.
+  // Ini lebih aman kalau API mengembalikan beberapa record dan urutannya berubah.
+  return records.slice().sort((a,b)=>parseTs(b?.ts ?? b?.timestamp ?? b?.createdAt ?? b?.created_at ?? b?.time ?? b?.date)-parseTs(a?.ts ?? a?.timestamp ?? a?.createdAt ?? a?.created_at ?? a?.time ?? a?.date))[0] || null;
+}
+
+function firstData(records){
+  const r=newestRecord(records);
+  if(!r)return null;
 
   // Format normal Beebotte: [{ data:{...}, ts:... }]
   // Format raw / payload lama: [{ data:{ data:{...}, write:true } }]
@@ -235,8 +257,7 @@ function parseTs(v){
 }
 
 function tsOf(records){
-  if(!Array.isArray(records)||!records.length)return 0;
-  const r=records[0]||{};
+  const r=newestRecord(records)||{};
   const direct = r.ts ?? r.timestamp ?? r.createdAt ?? r.created_at ?? r.time ?? r.date;
   const nested = r.data && typeof r.data==='object' ? (r.data.ts ?? r.data.timestamp ?? r.data.time ?? r.data.date) : 0;
   return parseTs(direct) || parseTs(nested);
@@ -251,22 +272,30 @@ function hasDeviceData(){
 }
 
 async function refreshAll(){
+  if(refreshBusy) return;
+  refreshBusy=true;
   try{
     const resources=['status','heartbeat','telemetry','result','alerts'];
-    const [st,hb,tel,res,al]=await Promise.allSettled(resources.map(x=>apiRead(x,1)));
+    const [st,hb,tel,res,al]=await Promise.allSettled(resources.map(x=>apiRead(x,3)));
     const readTime=now();
 
-    if(st.status==='fulfilled'){state.status=firstData(st.value);state.statusTs=tsOf(st.value)||(state.status?readTime:0)}
-    if(hb.status==='fulfilled'){state.heartbeat=firstData(hb.value);state.heartbeatTs=tsOf(hb.value)||(state.heartbeat?readTime:0)}
-    if(tel.status==='fulfilled'){state.telemetry=firstData(tel.value);state.telemetryTs=tsOf(tel.value)||(state.telemetry?readTime:0)}
-    if(res.status==='fulfilled'){state.result=firstData(res.value);state.resultTs=tsOf(res.value)||(state.result?readTime:0)}
-    if(al.status==='fulfilled'){state.alerts=firstData(al.value);state.alertTs=tsOf(al.value)||(state.alerts?readTime:0)}
+    // PENTING:
+    // Jangan fallback timestamp ke readTime.
+    // Kalau ESP dicabut, Beebotte tetap mengembalikan data lama.
+    // readTime hanya waktu browser membaca data lama, bukan waktu Jarvis hidup.
+    if(st.status==='fulfilled'){state.status=firstData(st.value);state.statusTs=tsOf(st.value)}
+    if(hb.status==='fulfilled'){state.heartbeat=firstData(hb.value);state.heartbeatTs=tsOf(hb.value)}
+    if(tel.status==='fulfilled'){state.telemetry=firstData(tel.value);state.telemetryTs=tsOf(tel.value)}
+    if(res.status==='fulfilled'){state.result=firstData(res.value);state.resultTs=tsOf(res.value)}
+    if(al.status==='fulfilled'){state.alerts=firstData(al.value);state.alertTs=tsOf(al.value)}
 
     state.lastRefresh=readTime;
     render();
   }catch(e){
     toast('critical','Refresh gagal',e.message);
     renderOffline(e.message);
+  }finally{
+    refreshBusy=false;
   }
 }
 
@@ -276,20 +305,20 @@ function render(){
   const latestTs=latestDeviceTs();
   const age=latestTs?Math.max(0,Math.round((Date.now()-latestTs)/1000)):999999;
 
-  // Beebotte kadang tidak mengirim timestamp saat data dibaca dari REST.
-  // Kalau data berhasil terbaca dalam refresh terakhir, anggap online kecuali payload menyatakan online:false.
-  const recentlyRead = state.lastRefresh && (Date.now()-state.lastRefresh)<15000 && hasDeviceData();
-  const online=(age<120 || recentlyRead) && hb.online!==false;
+  // FIX ONLINE/OFFLINE:
+  // Online hanya jika timestamp data device benar-benar baru.
+  // Berhasil membaca data lama dari Beebotte TIDAK boleh dihitung online.
+  const online=hasDeviceData() && latestTs>0 && age<=OFFLINE_AFTER_SEC && hb.online!==false;
 
   $('onlinePill').className='pill '+(online?'':'off');
   $('onlinePill').textContent=online?'ONLINE':'OFFLINE';
   $('devName').textContent=hb.device||'JARVIS';
   $('fw').textContent=hb.firmware||tel.runtime?.firmware||'-';
-  $('hbAge').textContent=latestTs?`${age}s`:(recentlyRead?'LIVE':'-');
+  $('hbAge').textContent=latestTs?`${age}s`:'NO TS';
   $('wifiRssi').textContent=(hb.rssi??tel.wifi?.rssi_dbm??'-')+' dBm';
   $('wifiIp').textContent=hb.ip||tel.wifi?.local_ip||'-';
   $('uptime').textContent=uptimeText(hb.uptime_sec||tel.runtime?.uptime_sec||0);
-  $('sideDevice').innerHTML=`IP: ${hb.ip||tel.wifi?.local_ip||'-'}<br>RSSI: ${hb.rssi??tel.wifi?.rssi_dbm??'-'} dBm<br>FW: ${hb.firmware||tel.runtime?.firmware||'-'}<br><span class="${online?'ok':'critical'}">${online?'CONNECTED':'OFFLINE'}</span>`;
+  $('sideDevice').innerHTML=`IP: ${hb.ip||tel.wifi?.local_ip||'-'}<br>RSSI: ${hb.rssi??tel.wifi?.rssi_dbm??'-'} dBm<br>FW: ${hb.firmware||tel.runtime?.firmware||'-'}<br>Last seen: ${latestTs?age+' detik lalu':'NO TIMESTAMP'}<br><span class="${online?'ok':'critical'}">${online?'CONNECTED':'OFFLINE'}</span>`;
   renderTelemetry(tel);
   renderAlerts();
   $('lastResult').textContent=state.result?JSON.stringify(state.result,null,2):'Belum ada result.'
@@ -303,10 +332,14 @@ function renderAlerts(){
   const tel=state.telemetry||{};
   const latestTs=latestDeviceTs();
   const age=latestTs?Math.max(0,Math.round((Date.now()-latestTs)/1000)):999999;
-  const recentlyRead = state.lastRefresh && (Date.now()-state.lastRefresh)<15000 && hasDeviceData();
 
-  if(age>120 && !recentlyRead)arr.push({level:'critical',title:'Jarvis Offline',message:'Data Jarvis tidak terbaca dari Beebotte lebih dari 120 detik.',source:'Dashboard'});
-  else arr.push({level:'ok',title:'Jarvis Online',message:`Data Jarvis terbaca normal. Last seen: ${latestTs?age+' detik lalu':'live refresh'}.`,source:'Beebotte'});
+  if(!hasDeviceData() || !latestTs){
+    arr.push({level:'critical',title:'Jarvis Offline',message:'Belum ada timestamp data device yang valid dari Beebotte.',source:'Dashboard'});
+  }else if(age>OFFLINE_AFTER_SEC){
+    arr.push({level:'critical',title:'Jarvis Offline',message:`Data Jarvis terakhir ${age} detik lalu. Batas offline: ${OFFLINE_AFTER_SEC} detik.`,source:'Dashboard'});
+  }else{
+    arr.push({level:'ok',title:'Jarvis Online',message:`Data Jarvis baru. Last seen: ${age} detik lalu.`,source:'Beebotte'});
+  }
 
   if((hb.rssi||tel.wifi?.rssi_dbm||0)<-75)arr.push({level:'warning',title:'Sinyal WiFi Lemah',message:`RSSI ${hb.rssi||tel.wifi?.rssi_dbm} dBm`,source:'WiFi'});
   if(Number(tel.memory?.heap_used_percent||0)>80)arr.push({level:'warning',title:'Heap Tinggi',message:`Heap ${tel.memory.heap_used_percent}%`,source:'ESP32'});
@@ -320,7 +353,7 @@ function norm(l){l=String(l||'info').toLowerCase();if(['error','danger','fatal',
 
 $('jarvisModal').addEventListener('click',e=>{if(e.target.id==='jarvisModal')modalClose()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')modalClose()});
-loadSettings();refreshAll();setInterval(refreshAll,5000);
+loadSettings();refreshAll();setInterval(refreshAll,POLL_INTERVAL_MS);
 </script>
 </body>
 </html>
