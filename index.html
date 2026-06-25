@@ -276,8 +276,12 @@ async function apiRead(resource,limit=3){
   const c=cfg();
   if(!c.username)throw new Error('Adafruit Username belum diisi.');
   if(!c.key)throw new Error('AIO Key belum diisi.');
-  const url=`${c.apiBase}/${encodeURIComponent(c.username)}/feeds/${encodeURIComponent(feedKey(resource))}/data?limit=${limit}&_=${Date.now()}`;
-  const r=await fetch(url,{cache:'no-store',headers:{'X-AIO-Key':c.key,'Cache-Control':'no-cache'}});
+
+  // GitHub Pages/static browser sering gagal kalau memakai header X-AIO-Key
+  // karena preflight CORS. Adafruit IO mendukung x-aio-key sebagai query parameter,
+  // jadi dashboard static memakai query parameter agar request lebih kompatibel.
+  const url=`${c.apiBase}/${encodeURIComponent(c.username)}/feeds/${encodeURIComponent(feedKey(resource))}/data?limit=${limit}&x-aio-key=${encodeURIComponent(c.key)}&_=${Date.now()}`;
+  const r=await fetch(url,{cache:'no-store',mode:'cors'});
   if(!r.ok){let body='';try{body=await r.text()}catch(e){};throw new Error(`Read ${feedKey(resource)} gagal: HTTP ${r.status}${body?' - '+body.slice(0,180):''}`)}
   return await r.json();
 }
@@ -285,9 +289,14 @@ async function apiPublish(resource,value){
   const c=cfg();
   if(!c.username)throw new Error('Adafruit Username belum diisi.');
   if(!c.key)throw new Error('AIO Key belum diisi.');
-  const url=`${c.apiBase}/${encodeURIComponent(c.username)}/feeds/${encodeURIComponent(feedKey(resource))}/data`;
+
+  // Hindari header custom dan application/json agar browser tidak memicu preflight CORS.
+  // Adafruit IO Create Data mendukung form field "value".
+  const url=`${c.apiBase}/${encodeURIComponent(c.username)}/feeds/${encodeURIComponent(feedKey(resource))}/data?x-aio-key=${encodeURIComponent(c.key)}`;
   const valueString=(typeof value==='string')?value:JSON.stringify(value);
-  const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','X-AIO-Key':c.key},body:JSON.stringify({value:valueString})});
+  const form=new FormData();
+  form.append('value',valueString);
+  const r=await fetch(url,{method:'POST',mode:'cors',body:form});
   if(!r.ok){let body='';try{body=await r.text()}catch(e){};throw new Error(`Publish ${feedKey(resource)} gagal: HTTP ${r.status}${body?' - '+body.slice(0,220):''}`)}
   try{return await r.json()}catch(e){return await r.text()}
 }
