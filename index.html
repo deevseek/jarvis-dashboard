@@ -1,460 +1,128 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Jarvis Emergency Control - Adafruit IO Realtime</title>
-<style>
-:root{
-  --bg:#030712;--panel:#07111f;--panel2:#0b1b2d;--line:#14324f;--text:#e5f8ff;
-  --muted:#8cb4d6;--cyan:#38d7ff;--green:#32f087;--yellow:#ffd166;--red:#ff5c7a;--purple:#a78bfa;
-}
-*{box-sizing:border-box}
-body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:radial-gradient(circle at top left,#0c3457 0,#06111f 38%,#02050d 100%);color:var(--text);min-height:100vh}
-.app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
-.side{background:rgba(3,12,24,.88);border-right:1px solid var(--line);padding:24px;position:sticky;top:0;height:100vh}
-.brand{font-size:28px;font-weight:900;letter-spacing:1.5px;line-height:1;color:#9eeaff;text-shadow:0 0 22px rgba(56,215,255,.35)}
-.subtitle{font-size:12px;color:var(--muted);margin-top:10px;letter-spacing:.9px}
-.nav{margin-top:28px;display:grid;gap:10px}
-.nav button{border:1px solid #1e456a;background:#081a2e;color:var(--text);padding:13px 14px;border-radius:13px;text-align:left;font-weight:800;cursor:pointer}
-.nav button.active,.nav button:hover{background:#0d2946;box-shadow:0 0 18px rgba(56,215,255,.16)}
-.device{margin-top:28px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#071727}
-.device h3{margin:0 0 10px}
-.main{padding:26px}
-.top{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);border-radius:18px;background:rgba(7,17,31,.84);padding:20px 22px;margin-bottom:20px}
-.top h1{margin:0;font-size:33px;letter-spacing:1px}
-.pill{border-radius:999px;padding:9px 14px;font-weight:900;border:1px solid #276449;background:#0b3a25;color:var(--green)}
-.pill.off{background:#351017;color:var(--red);border-color:#7c1e32}.pill.warn{background:#3a2f0b;color:var(--yellow);border-color:#8b6d1d}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.grid.three{grid-template-columns:repeat(3,1fr)}
-.card{border:1px solid var(--line);border-radius:18px;background:rgba(7,17,31,.9);padding:18px;box-shadow:0 0 30px rgba(0,120,255,.07)}
-.card h3{margin:0 0 10px;font-size:15px;color:#ddf7ff}
-.muted{color:var(--muted);font-size:13px}.big{font-size:30px;font-weight:900;color:#9eeaff;text-shadow:0 0 15px rgba(56,215,255,.25)}
-.section{display:none}.section.active{display:block}
-.section-title{display:flex;align-items:center;justify-content:space-between;margin:18px 0 12px}
-.actions{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.actions.six{grid-template-columns:repeat(6,1fr)}
-.btn{border:1px solid #23527d;background:#081a2e;color:#e5f8ff;padding:16px;border-radius:15px;font-weight:900;cursor:pointer;min-height:58px}
-.btn:hover{filter:brightness(1.22)}.btn.green{color:var(--green)}.btn.yellow{color:var(--yellow)}.btn.red{color:var(--red)}.btn.cyan{color:var(--cyan)}.btn.purple{color:var(--purple)}
-.btn:disabled{opacity:.45;cursor:not-allowed}
-.form{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field label{display:block;margin-bottom:6px;color:var(--muted);font-size:12px}
-.field input,.field select{width:100%;border:1px solid #24517a;background:#030b15;color:var(--text);border-radius:12px;padding:13px}
-.bar{height:12px;background:#0d2b42;border-radius:99px;overflow:hidden;margin:9px 0}.bar>div{height:100%;background:linear-gradient(90deg,#22c55e,#38d7ff);width:0}
-.alert-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-.alert-card{position:relative;overflow:hidden;border:1px solid rgba(56,215,255,.24);border-radius:18px;background:linear-gradient(135deg,rgba(7,17,31,.94),rgba(2,8,18,.96));padding:16px}
-.alert-card:before{content:"";position:absolute;inset:-50%;background:radial-gradient(circle,rgba(56,215,255,.13),transparent 45%);transform:translateX(-40%)}
-.alert-card>*{position:relative}.badge{border:1px solid;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:900}
-.ok{color:var(--green)}.warning{color:var(--yellow)}.critical{color:var(--red)}.info{color:var(--cyan)}
-.raw{white-space:pre-wrap;word-break:break-word;background:#020812;border:1px solid #14324f;border-radius:14px;padding:13px;color:#b9f6c9;max-height:360px;overflow:auto}
-.toast{position:fixed;right:18px;bottom:18px;max-width:420px;z-index:99}.toast .alert-card{margin-top:10px}
-code{background:#071727;border:1px solid #14324f;border-radius:6px;padding:1px 6px;color:#bff4ff}
-.feed-list{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.feed-chip{border:1px solid #16466f;border-radius:999px;padding:8px 10px;color:#bdeaff;background:#061625;font-size:12px}
-@media(max-width:1100px){.app{grid-template-columns:1fr}.side{height:auto;position:relative}.grid,.grid.three,.actions,.actions.six,.alert-grid,.form,.feed-list{grid-template-columns:1fr}.top{align-items:flex-start;gap:12px;flex-direction:column}.top h1{font-size:25px}}
-.modal-overlay{position:fixed;inset:0;background:rgba(2,8,18,.74);backdrop-filter:blur(9px);display:none;align-items:center;justify-content:center;z-index:9999;padding:18px}.modal-overlay.show{display:flex}
-.modal{width:min(580px,94vw);border:1px solid rgba(56,215,255,.24);background:linear-gradient(180deg,#071422 0%,#040b14 100%);border-radius:24px;box-shadow:0 30px 90px rgba(0,0,0,.58),0 0 44px rgba(56,215,255,.13);overflow:hidden;animation:modalIn .18s ease-out}
-.modal.danger{border-color:rgba(255,92,122,.33);box-shadow:0 30px 90px rgba(0,0,0,.60),0 0 44px rgba(255,92,122,.15)}.modal.warning{border-color:rgba(255,209,102,.33)}
-@keyframes modalIn{from{transform:translateY(14px) scale(.985);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
-.modal-head{padding:18px 20px 14px;border-bottom:1px solid #14324f;display:flex;align-items:center;gap:13px}
-.modal-icon{width:44px;height:44px;border-radius:15px;display:grid;place-items:center;font-size:20px;font-weight:900;border:1px solid rgba(255,255,255,.08)}
-.modal-icon.info{background:rgba(56,215,255,.13);color:var(--cyan)}.modal-icon.success{background:rgba(50,240,135,.13);color:var(--green)}
-.modal-icon.warning{background:rgba(255,209,102,.13);color:var(--yellow)}.modal-icon.danger{background:rgba(255,92,122,.13);color:var(--red)}
-.modal-title{font-size:20px;font-weight:900;color:#eafaff;margin:0}.modal-subtitle{font-size:12px;color:var(--muted);margin-top:4px}
-.modal-body{padding:20px;color:#d8edf9}.modal-box{border:1px solid #14324f;background:#05111c;border-radius:16px;padding:14px;margin-top:12px;color:#bdeaff;line-height:1.55}
-.modal-command{margin-top:10px;display:inline-flex;gap:6px;align-items:center;font-weight:900;color:#9eeaff;background:#061625;border:1px solid #14324f;border-radius:999px;padding:6px 10px}
-.modal-input{width:100%;margin-top:12px;background:#020812;border:1px solid #24517a;border-radius:13px;color:var(--text);padding:13px;font-weight:800;letter-spacing:.8px}
-.modal-actions{padding:16px 20px 20px;display:flex;justify-content:flex-end;gap:12px;border-top:1px solid #14324f;flex-wrap:wrap}
-.modal-btn{min-width:124px;border-radius:14px;border:1px solid #24517a;padding:12px 16px;font-weight:900;cursor:pointer;background:#081a2e;color:#e5f8ff}.modal-btn.cancel{background:#08131f;color:#bcd8ec}.modal-btn.primary.danger{color:var(--red)}.modal-btn.primary.warning{color:var(--yellow)}.modal-btn.primary.info{color:var(--cyan)}.modal-btn.primary.success{color:var(--green)}
-.loading-line{height:4px;width:100%;overflow:hidden;border-radius:999px;background:#0c2237;margin-top:14px}.loading-line:before{content:"";display:block;width:38%;height:100%;background:linear-gradient(90deg,transparent,var(--cyan),transparent);animation:loadingSlide 1.15s linear infinite}@keyframes loadingSlide{from{transform:translateX(-120%)}to{transform:translateX(320%)}}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jarvis Emergency Control - HiveMQ Cloud</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <style>
+    :root{--bg:#020712;--panel:#07111f;--panel2:#0b1b2d;--line:#163655;--text:#e5f8ff;--muted:#8fb5d3;--cyan:#38d7ff;--green:#32f087;--yellow:#ffd166;--red:#ff5c7a;--purple:#a78bfa}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:radial-gradient(circle at top left,#0d3457 0,#061120 38%,#02050d 100%);color:var(--text);min-height:100vh}.app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}.side{background:rgba(3,12,24,.9);border-right:1px solid var(--line);padding:24px;position:sticky;top:0;height:100vh}.brand{font-size:28px;font-weight:900;letter-spacing:1.5px;line-height:1;color:#9eeaff;text-shadow:0 0 22px rgba(56,215,255,.35)}.subtitle{font-size:12px;color:var(--muted);margin-top:10px;letter-spacing:.9px}.nav{margin-top:28px;display:grid;gap:10px}.nav button,.btn{border:1px solid #23527d;background:#081a2e;color:#e5f8ff;padding:13px 14px;border-radius:13px;text-align:left;font-weight:800;cursor:pointer}.nav button.active,.nav button:hover,.btn:hover{background:#0d2946;box-shadow:0 0 18px rgba(56,215,255,.16)}.device{margin-top:28px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#071727}.main{padding:26px}.top{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);border-radius:18px;background:rgba(7,17,31,.86);padding:20px 22px;margin-bottom:20px}.top h1{margin:0;font-size:33px;letter-spacing:1px}.pill{border-radius:999px;padding:9px 14px;font-weight:900;border:1px solid #276449;background:#0b3a25;color:var(--green)}.pill.off{background:#351017;color:var(--red);border-color:#7c1e32}.pill.warn{background:#3a2f0b;color:var(--yellow);border-color:#8b6d1d}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.grid.two{grid-template-columns:1fr 1fr}.card{border:1px solid var(--line);border-radius:18px;background:rgba(7,17,31,.92);padding:18px;box-shadow:0 0 30px rgba(0,120,255,.07)}.card h3{margin:0 0 10px;font-size:15px;color:#ddf7ff}.muted{color:var(--muted);font-size:13px}.big{font-size:30px;font-weight:900;color:#9eeaff;text-shadow:0 0 15px rgba(56,215,255,.25)}.section-title{display:flex;align-items:center;justify-content:space-between;margin:18px 0 12px}.actions{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.btn{text-align:center;min-height:56px}.btn.green{color:var(--green)}.btn.yellow{color:var(--yellow)}.btn.red{color:var(--red)}.btn.cyan{color:var(--cyan)}.btn.purple{color:var(--purple)}.btn:disabled{opacity:.45;cursor:not-allowed}.form{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field label{display:block;margin-bottom:6px;color:var(--muted);font-size:12px}.field input,.field select{width:100%;border:1px solid #24517a;background:#030b15;color:var(--text);border-radius:12px;padding:13px}.raw{white-space:pre-wrap;word-break:break-word;background:#020812;border:1px solid #14324f;border-radius:14px;padding:13px;color:#b9f6c9;max-height:420px;overflow:auto}.ok{color:var(--green)}.warning{color:var(--yellow)}.critical{color:var(--red)}.info{color:var(--cyan)}.feed-chip{display:inline-block;border:1px solid #16466f;border-radius:999px;padding:8px 10px;color:#bdeaff;background:#061625;font-size:12px;margin:4px}.toast{position:fixed;right:18px;bottom:18px;max-width:420px;z-index:99}.toast .card{margin-top:10px}.modal-bg{position:fixed;inset:0;background:rgba(2,8,18,.78);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:18px;z-index:999}.modal{width:min(560px,94vw);border:1px solid rgba(56,215,255,.25);background:linear-gradient(180deg,#071422,#040b14);border-radius:22px;box-shadow:0 30px 90px rgba(0,0,0,.62);overflow:hidden}.modal-head{padding:18px 20px;border-bottom:1px solid #14324f;font-weight:900;font-size:20px}.modal-body{padding:20px;color:#d8edf9}.modal-actions{padding:16px 20px 20px;display:flex;justify-content:flex-end;gap:12px;border-top:1px solid #14324f;flex-wrap:wrap}code{background:#071727;border:1px solid #14324f;border-radius:6px;padding:1px 6px;color:#bff4ff}.bar{height:12px;background:#0d2b42;border-radius:99px;overflow:hidden;margin:9px 0}.bar>div{height:100%;background:linear-gradient(90deg,#22c55e,#38d7ff);width:0}
+    @media(max-width:1100px){.app{grid-template-columns:1fr}.side{height:auto;position:relative}.grid,.grid.two,.actions,.form{grid-template-columns:1fr}.top{align-items:flex-start;gap:12px;flex-direction:column}.top h1{font-size:25px}}
+  </style>
 </head>
 <body>
-<div class="app">
-  <aside class="side">
-    <div class="brand">JARVIS<br>EMERGENCY</div>
-    <div class="subtitle">ADAFRUIT IO OUT-OF-BAND CONTROL</div>
-    <div class="nav">
-      <button class="active" onclick="show('dashboard',this)">Dashboard</button>
-      <button onclick="show('control',this)">Emergency Control</button>
-      <button onclick="show('telemetry',this)">Telemetry</button>
-      <button onclick="show('agent',this)">Server Agent</button>
-      <button onclick="show('alerts',this)">Alerts & Audit</button>
-      <button onclick="show('settings',this)">Settings</button>
-    </div>
-    <div class="device">
-      <h3>JARVIS LINK</h3>
-      <div id="sideDevice" class="muted">Belum tersambung.</div>
-    </div>
-  </aside>
-  <main class="main">
-    <div class="top">
-      <div>
-        <h1>PROFESIONAL SERVIS SERVER CONTROL</h1>
-        <div class="muted">Dashboard lokal via Adafruit IO. Tidak bergantung ke Cloudflare/server Linux untuk perintah relay.</div>
-      </div>
-      <div id="onlinePill" class="pill off">OFFLINE</div>
-    </div>
-
-    <section id="dashboard" class="section active">
-      <div class="grid">
-        <div class="card"><h3>DEVICE</h3><div id="devName" class="big">JARVIS</div><div id="fw" class="muted">-</div></div>
-        <div class="card"><h3>HEARTBEAT</h3><div id="hbAge" class="big">-</div><div class="muted">last seen dari feed heartbeat/status</div></div>
-        <div class="card"><h3>WIFI</h3><div id="wifiRssi" class="big">-</div><div id="wifiIp" class="muted">-</div></div>
-        <div class="card"><h3>UPTIME</h3><div id="uptime" class="big">-</div><div class="muted">ESP32 runtime</div></div>
-      </div>
-      <div class="section-title"><h2>Quick Emergency Actions</h2><span class="muted">Gunakan hati-hati</span></div>
-      <div class="actions">
-        <button class="btn cyan" onclick="sendCommand('ping')">PING JARVIS</button>
-        <button class="btn green" onclick="guarded('power_on',1000)">POWER ON</button>
-        <button class="btn yellow" onclick="guarded('hard_reset',1000)">HARD RESET</button>
-        <button class="btn red" onclick="guarded('force_power_off',7000)">FORCE POWER OFF</button>
-      </div>
-      <div class="section-title"><h2>Last Command Result</h2><button class="btn cyan" onclick="refreshAll(true)">REFRESH</button></div>
-      <div id="lastResult" class="raw">Belum ada result.</div>
-    </section>
-
-    <section id="control" class="section">
-      <div class="card">
-        <h3>Relay & Diagnostic</h3>
-        <div class="actions">
-          <button class="btn cyan" onclick="sendCommand('ping')">PING</button>
-          <button class="btn cyan" onclick="sendCommand('test_power_relay')">TEST POWER RELAY</button>
-          <button class="btn cyan" onclick="sendCommand('test_reset_relay')">TEST RESET RELAY</button>
-          <button class="btn cyan" onclick="sendCommand('identify_jarvis')">BLINK LED</button>
-        </div>
-      </div>
-      <div class="section-title"><h2>Power Control</h2></div>
-      <div class="actions">
-        <button class="btn green" onclick="guarded('power_on',1000)">POWER ON / PRESS</button>
-        <button class="btn yellow" onclick="guarded('hard_reset',1000)">HARD RESET</button>
-        <button class="btn red" onclick="guarded('force_power_off',7000)">FORCE POWER OFF</button>
-        <button class="btn yellow" onclick="guarded('restart_jarvis')">RESTART JARVIS</button>
-      </div>
-      <div class="section-title"><h2>Service Control via Agent</h2><span class="muted">Jalan kalau agent Linux masih online</span></div>
-      <div class="actions six">
-        <button class="btn purple" onclick="sendCommand('restart_cloudflared')">RESTART CLOUDFLARED</button>
-        <button class="btn purple" onclick="sendCommand('restart_nginx')">RESTART NGINX</button>
-        <button class="btn purple" onclick="sendCommand('restart_php')">RESTART PHP</button>
-        <button class="btn purple" onclick="sendCommand('restart_mysql')">RESTART MYSQL</button>
-        <button class="btn red" onclick="guarded('reboot_server')">REBOOT SERVER</button>
-        <button class="btn red" onclick="guarded('power_off')">POWER OFF SERVER</button>
-      </div>
-    </section>
-
-    <section id="telemetry" class="section">
-      <div class="grid">
-        <div class="card"><h3>RAM / HEAP</h3><div id="heapPct" class="big">-</div><div class="bar"><div id="heapBar"></div></div><div id="heapText" class="muted">-</div></div>
-        <div class="card"><h3>CHIP</h3><div id="chip" class="big">-</div><div id="chipText" class="muted">-</div></div>
-        <div class="card"><h3>FLASH</h3><div id="flash" class="big">-</div><div id="flashText" class="muted">-</div></div>
-        <div class="card"><h3>NETWORK</h3><div id="net" class="big">-</div><div id="netText" class="muted">-</div></div>
-      </div>
-      <div class="section-title"><h2>Raw Telemetry</h2></div>
-      <div id="rawTelemetry" class="raw">-</div>
-    </section>
-
-    <section id="agent" class="section">
-      <div class="grid three">
-        <div class="card"><h3>AGENT STATUS</h3><div id="agentOk" class="big">-</div><div id="agentLatency" class="muted">-</div></div>
-        <div class="card"><h3>CLOUDFLARED</h3><div id="svcCloudflared" class="big">-</div></div>
-        <div class="card"><h3>NGINX / PHP / MYSQL</h3><div id="svcStack" class="big">-</div></div>
-      </div>
-      <div class="section-title"><h2>Raw Agent</h2></div>
-      <div id="rawAgent" class="raw">-</div>
-    </section>
-
-    <section id="alerts" class="section">
-      <div class="section-title"><h2>Alert Center</h2></div>
-      <div id="alertBox" class="alert-grid"></div>
-      <div class="section-title"><h2>Audit Log</h2></div>
-      <div id="auditLog" class="raw">-</div>
-    </section>
-
-    <section id="settings" class="section">
-      <div class="card">
-        <h3>Adafruit IO Settings</h3>
-        <div class="form">
-          <div class="field"><label>Adafruit Username</label><input id="aioUser" placeholder="antdev"></div>
-          <div class="field"><label>Adafruit AIO Key</label><input id="aioKey" type="password" placeholder="aio_xxxxxxxxxxxxxxxxx"></div>
-          <div class="field"><label>Feed Prefix</label><input id="prefix" placeholder="jarvis" value="jarvis"></div>
-          <div class="field"><label>Command Auth opsional</label><input id="cmdAuth" type="password" placeholder="isi jika firmware memakai auth"></div>
-          <div class="field"><label>API Base</label><input id="apiBase" value="https://io.adafruit.com/api/v2"></div>
-          <div class="field"><label>Polling Interval</label><select id="pollMs"><option value="1000">1 detik</option><option value="1500" selected>1.5 detik</option><option value="2000">2 detik</option><option value="3000">3 detik</option></select></div>
-          <div class="field"><label>Offline setelah detik</label><input id="offlineAfter" type="number" value="25" min="8" max="120"></div>
-        </div>
-        <div class="section-title"><h2>Feeds Firmware</h2></div>
-        <div id="feedList" class="feed-list"></div>
-        <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
-          <button class="btn green" onclick="saveSettings()">SIMPAN SETTING</button>
-          <button class="btn cyan" onclick="refreshAll(true)">TEST REFRESH</button>
-          <button class="btn yellow" onclick="testApi()">TEST API</button>
-          <button class="btn red" onclick="clearSettings()">HAPUS SETTING LOKAL</button>
-        </div>
-        <p class="muted">AIO Key disimpan di browser ini menggunakan localStorage. Jangan upload file ini ke hosting publik/GitHub jika AIO Key sudah terisi.</p>
-      </div>
-    </section>
-  </main>
-</div>
-
-<div id="jarvisModal" class="modal-overlay" role="dialog" aria-modal="true">
-  <div id="jarvisModalCard" class="modal">
-    <div class="modal-head"><div id="jarvisModalIcon" class="modal-icon info">i</div><div><h3 id="jarvisModalTitle" class="modal-title">Jarvis</h3><div id="jarvisModalSubtitle" class="modal-subtitle">System dialog</div></div></div>
-    <div id="jarvisModalBody" class="modal-body"></div>
-    <div id="jarvisModalActions" class="modal-actions"></div>
-  </div>
-</div>
-<div id="toast" class="toast"></div>
-
+<div id="root"></div>
 <script>
-const state={status:null,heartbeat:null,telemetry:null,result:null,alerts:null,agent:null,audit:null,lastRefresh:null,statusTs:0,heartbeatTs:0,telemetryTs:0,resultTs:0,alertTs:0,agentTs:0,auditTs:0};
-const FEEDS=['command','result','status','heartbeat','telemetry','alerts','agent','audit'];
-let refreshBusy=false;
-let pollTimer=null;
-
-function $(id){return document.getElementById(id)}
-function cfg(){
-  return {
-    username:$('aioUser').value.trim(),
-    key:$('aioKey').value.trim(),
-    prefix:(sanitizeFeedKey($('prefix').value.trim())||'jarvis'),
-    cmdAuth:$('cmdAuth').value.trim(),
-    apiBase:($('apiBase').value.trim()||'https://io.adafruit.com/api/v2').replace(/\/$/,''),
-    pollMs:Math.max(1000,Number($('pollMs').value)||1500),
-    offlineAfter:Math.max(8,Number($('offlineAfter').value)||25)
-  };
+const {useEffect,useMemo,useRef,useState}=React;
+const DEFAULTS={host:'624e0fdb49dc4ab690dd02165a6ecefe.s1.eu.hivemq.cloud',port:'8884',path:'/mqtt',username:'antdev',password:'',topicPrefix:'jarvis',cmdAuth:'',offlineAfter:30,remember:false};
+const DANGEROUS=new Set(['hard_reset','force_power_off','reboot_server','power_off','reset_wifi_config','wifi_reset']);
+function safeJson(v){try{return typeof v==='string'?JSON.parse(v):v}catch(e){return v}}
+function nowId(prefix='ui'){return prefix+'-'+Date.now()+'-'+Math.random().toString(16).slice(2,7)}
+function uptimeText(sec){sec=Number(sec||0);const d=Math.floor(sec/86400),h=Math.floor(sec%86400/3600),m=Math.floor(sec%3600/60);return d?`${d}d ${h}h ${m}m`:h?`${h}h ${m}m`:`${m}m`}
+function bytes(n){n=Number(n||0);if(!n)return '-';const u=['B','KB','MB','GB'];let i=0;while(n>=1024&&i<u.length-1){n/=1024;i++}return n.toFixed(i?2:0)+' '+u[i]}
+function topicOf(cfg,resource){return `${cfg.topicPrefix}/${resource}`}
+function wsUrl(cfg){return `wss://${cfg.host}:${cfg.port}${cfg.path||'/mqtt'}`}
+function App(){
+  const [tab,setTab]=useState('dashboard');
+  const [cfg,setCfg]=useState(()=>({...DEFAULTS,...safeJson(localStorage.getItem('jarvis-hivemq-ui')||'{}')}));
+  const [connected,setConnected]=useState(false);
+  const [messages,setMessages]=useState([]);
+  const [state,setState]=useState({status:null,heartbeat:null,telemetry:null,result:null,agent:null,alerts:null,audit:null,lastSeen:0});
+  const [modal,setModal]=useState(null);
+  const [toast,setToast]=useState(null);
+  const clientRef=useRef(null);
+  const currentCfg=useRef(cfg); currentCfg.current=cfg;
+  const latest=state.heartbeat||state.status||{};
+  const latestTs=state.lastSeen||0;
+  const age=latestTs?Math.round((Date.now()-latestTs)/1000):999999;
+  const online=connected && latestTs && age<=Number(cfg.offlineAfter||30) && latest.online!==false;
+  const telemetry=state.telemetry||{};
+  const agent=state.agent||{};
+  function showToast(type,title,msg){setToast({type,title,msg});setTimeout(()=>setToast(null),4500)}
+  function saveSettings(){
+    if(cfg.remember)localStorage.setItem('jarvis-hivemq-ui',JSON.stringify(cfg));
+    else localStorage.removeItem('jarvis-hivemq-ui');
+    showToast('ok','Setting disimpan',cfg.remember?'Tersimpan di browser ini.':'Tidak disimpan permanen.');
+    reconnect();
+  }
+  function clearSettings(){localStorage.removeItem('jarvis-hivemq-ui');setCfg(DEFAULTS);showToast('warning','Setting dihapus','Konfigurasi lokal browser sudah dihapus.')}
+  function onIncoming(topic,payload){
+    const text=new TextDecoder().decode(payload);
+    const data=safeJson(text);
+    setMessages(m=>[{ts:new Date().toLocaleTimeString(),topic,payload:text},...m].slice(0,80));
+    const p=currentCfg.current.topicPrefix+'/';
+    const res=topic.startsWith(p)?topic.slice(p.length):topic;
+    setState(s=>{
+      const n={...s};
+      if(res==='heartbeat'||res==='status'){n[res]=data;n.lastSeen=Date.now()}
+      else if(res==='telemetry')n.telemetry=data;
+      else if(res==='result')n.result=data;
+      else if(res==='agent')n.agent=data;
+      else if(res==='alerts')n.alerts=data;
+      else if(res==='audit')n.audit=data;
+      return n;
+    });
+  }
+  function reconnect(){
+    try{clientRef.current?.end(true)}catch(e){}
+    setConnected(false);
+    if(!cfg.host||!cfg.username||!cfg.password){showToast('critical','Belum lengkap','Isi Host, Username, dan Password HiveMQ.');return}
+    const client=mqtt.connect(wsUrl(cfg),{username:cfg.username,password:cfg.password,clientId:'jarvis-web-'+Math.random().toString(16).slice(2),clean:true,reconnectPeriod:3000,connectTimeout:12000});
+    clientRef.current=client;
+    client.on('connect',()=>{setConnected(true);client.subscribe(topicOf(currentCfg.current,'#'),{qos:0});showToast('ok','HiveMQ connected','Dashboard remote siap dipakai.')});
+    client.on('reconnect',()=>setConnected(false));
+    client.on('close',()=>setConnected(false));
+    client.on('error',err=>{setConnected(false);showToast('critical','MQTT error',String(err?.message||err))});
+    client.on('message',onIncoming);
+  }
+  useEffect(()=>{reconnect();return()=>{try{clientRef.current?.end(true)}catch(e){}}},[]);
+  function publishCommand(command,durationMs,confirmText){
+    const client=clientRef.current;
+    if(!client||!connected){showToast('critical','Belum connected','HiveMQ belum tersambung.');return}
+    const body={command,request_id:nowId(command),auth:cfg.cmdAuth||undefined};
+    if(durationMs)body.duration_ms=durationMs;
+    if(confirmText)body.confirm=confirmText;
+    client.publish(topicOf(cfg,'command'),JSON.stringify(body),{qos:0});
+    setState(s=>({...s,result:{pending:true,command,request_id:body.request_id,message:'Command dikirim ke HiveMQ'}}));
+    showToast('info','Command dikirim',command);
+  }
+  function sendCommand(command,durationMs){
+    if(DANGEROUS.has(command)){
+      setModal({command,durationMs});
+      return;
+    }
+    publishCommand(command,durationMs);
+  }
+  function confirmDanger(){publishCommand(modal.command,modal.durationMs,'YES_I_UNDERSTAND');setModal(null)}
+  const nav=['dashboard','control','telemetry','agent','messages','settings'];
+  return <div className="app">
+    <aside className="side">
+      <div className="brand">JARVIS<br/>EMERGENCY</div>
+      <div className="subtitle">HIVEMQ CLOUD OUT-OF-BAND CONTROL</div>
+      <div className="nav">{nav.map(n=><button key={n} className={tab===n?'active':''} onClick={()=>setTab(n)}>{n.toUpperCase()}</button>)}</div>
+      <div className="device"><h3>JARVIS LINK</h3><div className="muted">Host: {cfg.host}<br/>Topic: {cfg.topicPrefix}/#<br/>User: {cfg.username||'-'}<br/>Last: {latestTs?age+' detik lalu':'belum ada'}<br/><span className={online?'ok':'critical'}>{online?'CONNECTED':'OFFLINE'}</span></div></div>
+    </aside>
+    <main className="main">
+      <div className="top"><div><h1>PROFESIONAL SERVIS SERVER CONTROL</h1><div className="muted">Remote control darurat via HiveMQ Cloud. Tidak expose IP ESP32 ke internet.</div></div><div className={'pill '+(online?'':'off')}>{online?'ONLINE':connected?'MQTT CONNECTED':'OFFLINE'}</div></div>
+      {tab==='dashboard'&&<section><div className="grid"><Card title="DEVICE" big={latest.device||telemetry.device?.name||'JARVIS'} small={latest.firmware||telemetry.runtime?.firmware||'-'}/><Card title="HEARTBEAT" big={latestTs?age+'s':'NO TS'} small="last seen via HiveMQ"/><Card title="WIFI" big={(latest.rssi??telemetry.wifi?.rssi_dbm??'-')+' dBm'} small={latest.ip||telemetry.wifi?.local_ip||'-'}/><Card title="UPTIME" big={uptimeText(latest.uptime_sec||telemetry.runtime?.uptime_sec)} small="ESP32 runtime"/></div><div className="section-title"><h2>Quick Emergency Actions</h2><span className="muted">Gunakan hati-hati</span></div><div className="actions"><button className="btn cyan" onClick={()=>sendCommand('ping')}>PING JARVIS</button><button className="btn green" onClick={()=>sendCommand('power_on',1000)}>POWER ON</button><button className="btn yellow" onClick={()=>sendCommand('hard_reset',1000)}>HARD RESET</button><button className="btn red" onClick={()=>sendCommand('force_power_off',7000)}>FORCE POWER OFF</button></div><div className="section-title"><h2>Last Result</h2></div><pre className="raw">{state.result?JSON.stringify(state.result,null,2):'Belum ada result.'}</pre></section>}
+      {tab==='control'&&<section><div className="card"><h3>Relay & Diagnostic</h3><div className="actions"><button className="btn cyan" onClick={()=>sendCommand('ping')}>PING</button><button className="btn cyan" onClick={()=>sendCommand('test_power_relay')}>TEST POWER RELAY</button><button className="btn cyan" onClick={()=>sendCommand('test_reset_relay')}>TEST RESET RELAY</button><button className="btn cyan" onClick={()=>sendCommand('identify_jarvis')}>BLINK LED</button></div></div><div className="section-title"><h2>Server Service Actions</h2></div><div className="actions"><button className="btn purple" onClick={()=>sendCommand('restart_cloudflared')}>RESTART CLOUDFLARED</button><button className="btn purple" onClick={()=>sendCommand('restart_nginx')}>RESTART NGINX</button><button className="btn purple" onClick={()=>sendCommand('restart_php')}>RESTART PHP</button><button className="btn purple" onClick={()=>sendCommand('restart_mysql')}>RESTART MYSQL</button><button className="btn red" onClick={()=>sendCommand('reboot_server')}>REBOOT SERVER</button><button className="btn red" onClick={()=>sendCommand('power_off')}>POWER OFF SERVER</button><button className="btn yellow" onClick={()=>sendCommand('restart_jarvis')}>RESTART JARVIS</button></div></section>}
+      {tab==='telemetry'&&<section><div className="grid"><TelemetryCard telemetry={telemetry}/></div><div className="section-title"><h2>Raw Telemetry</h2></div><pre className="raw">{telemetry?JSON.stringify(telemetry,null,2):'-'}</pre></section>}
+      {tab==='agent'&&<section><div className="grid"><Card title="AGENT" big={agent.ok===true?'OK':agent.ok===false?'ERROR':'-'} small={`HTTP ${agent.http_code??'-'} • ${agent.latency_ms??'-'} ms`}/><Card title="CLOUDFLARED" big={svc(agent,'cloudflared')} small="tunnel"/><Card title="NGINX / PHP / MYSQL" big={`N:${svc(agent,'nginx')} P:${svc(agent,'php')} M:${svc(agent,'mysql')}`} small="server stack"/><Card title="AAPANEL" big={svc(agent,'aapanel')} small={agent.status?.aapanel?.port?'Port '+agent.status.aapanel.port:'-'}/></div><div className="section-title"><h2>Raw Agent</h2></div><pre className="raw">{agent?JSON.stringify(agent,null,2):'-'}</pre></section>}
+      {tab==='messages'&&<section><div className="section-title"><h2>Live Messages</h2><button className="btn red" onClick={()=>setMessages([])}>CLEAR</button></div><pre className="raw">{messages.map(m=>`[${m.ts}] ${m.topic}\n${m.payload}`).join('\n\n')||'Belum ada pesan.'}</pre></section>}
+      {tab==='settings'&&<section><div className="card"><h3>HiveMQ Cloud Settings</h3><div className="form"><Field label="HiveMQ Host" value={cfg.host} onChange={v=>setCfg({...cfg,host:v})}/><Field label="WebSocket Port" value={cfg.port} onChange={v=>setCfg({...cfg,port:v})}/><Field label="WebSocket Path" value={cfg.path} onChange={v=>setCfg({...cfg,path:v})}/><Field label="HiveMQ Username" value={cfg.username} onChange={v=>setCfg({...cfg,username:v})}/><Field label="HiveMQ Password" type="password" value={cfg.password} onChange={v=>setCfg({...cfg,password:v})}/><Field label="Topic Prefix" value={cfg.topicPrefix} onChange={v=>setCfg({...cfg,topicPrefix:v||'jarvis'})}/><Field label="Command Auth" type="password" value={cfg.cmdAuth} onChange={v=>setCfg({...cfg,cmdAuth:v})}/><Field label="Offline setelah detik" type="number" value={cfg.offlineAfter} onChange={v=>setCfg({...cfg,offlineAfter:v})}/></div><p className="muted"><input type="checkbox" checked={!!cfg.remember} onChange={e=>setCfg({...cfg,remember:e.target.checked})}/> Simpan password di browser ini. Jangan aktifkan di komputer umum.</p><div className="section-title"><h2>Topics</h2></div>{['command','result','status','heartbeat','telemetry','agent','alerts','audit'].map(x=><span className="feed-chip" key={x}>{cfg.topicPrefix}/{x}</span>)}<div style={{marginTop:14,display:'flex',gap:10,flexWrap:'wrap'}}><button className="btn green" onClick={saveSettings}>SIMPAN & CONNECT</button><button className="btn cyan" onClick={reconnect}>RECONNECT</button><button className="btn red" onClick={clearSettings}>HAPUS SETTING LOKAL</button></div><p className="muted">UI ini berjalan di GitHub Pages dan connect langsung ke HiveMQ WebSocket <code>{wsUrl(cfg)}</code>. Password tidak ditulis di source code; masukkan manual di browser.</p></div></section>}
+    </main>
+    {modal&&<div className="modal-bg"><div className="modal"><div className="modal-head">Konfirmasi Command Berbahaya</div><div className="modal-body">Command <code>{modal.command}</code> akan dikirim ke ESP32 Jarvis. Pastikan kamu tahu efeknya ke server fisik.</div><div className="modal-actions"><button className="btn" onClick={()=>setModal(null)}>BATAL</button><button className="btn red" onClick={confirmDanger}>KIRIM DENGAN KONFIRMASI</button></div></div></div>}
+    {toast&&<div className="toast"><div className="card"><b className={toast.type}>{toast.title}</b><div className="muted">{toast.msg}</div></div></div>}
+  </div>
 }
-function sanitizeFeedKey(v){return String(v||'').trim().toLowerCase().replace(/[^a-z0-9_\-\s]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'')}
-function feedKey(resource){const c=cfg();return `${c.prefix}-${sanitizeFeedKey(resource)}`}
-function show(id,btn){document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');btn.classList.add('active')}
-function esc(s){return String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
-
-function modalClose(){ $('jarvisModal').classList.remove('show') }
-function modalOpen({type='info',title='Jarvis',subtitle='',body='',actions=[]}){
-  const iconMap={info:'i',success:'✓',warning:'!',danger:'⛔'};
-  $('jarvisModal').classList.add('show');
-  $('jarvisModalCard').className='modal '+type;
-  $('jarvisModalIcon').className='modal-icon '+type;
-  $('jarvisModalIcon').textContent=iconMap[type]||'i';
-  $('jarvisModalTitle').textContent=title;
-  $('jarvisModalSubtitle').textContent=subtitle||'';
-  $('jarvisModalBody').innerHTML=body;
-  const actionWrap=$('jarvisModalActions'); actionWrap.innerHTML='';
-  actions.forEach(a=>{
-    const btn=document.createElement('button');
-    btn.className=`modal-btn ${a.cancel?'cancel':'primary '+(a.type||type)}`;
-    btn.textContent=a.label||'OK';
-    btn.onclick=()=>{ if(a.close!==false) modalClose(); if(typeof a.onClick==='function') a.onClick(btn); };
-    actionWrap.appendChild(btn);
-  });
-}
-function modalAlert(type,title,message){modalOpen({type,title,subtitle:'Jarvis Notification',body:`<div class="modal-box">${message}</div>`,actions:[{label:'Tutup',cancel:true}]})}
-function modalLoading(title='Memproses...',message='Mohon tunggu sebentar'){modalOpen({type:'info',title,subtitle:'Jarvis Processing',body:`<div class="modal-box">${message}<div class="loading-line"></div></div>`,actions:[]})}
-
-function saveSettings(){
-  const c=cfg(); localStorage.setItem('jarvis-adafruit-settings',JSON.stringify(c));
-  renderFeeds(); restartPolling();
-  modalOpen({type:'success',title:'Settings Disimpan',subtitle:'Local Browser Storage',body:'<div class="modal-box">Konfigurasi dashboard Adafruit IO berhasil disimpan di browser ini.</div>',actions:[{label:'Tutup',cancel:true},{label:'Refresh Sekarang',type:'success',onClick:()=>refreshAll(true)}]})
-}
-function clearSettings(){
-  modalOpen({type:'warning',title:'Hapus Settings Lokal',subtitle:'Konfirmasi tindakan',body:'<div class="modal-box">Semua setting lokal dashboard akan dihapus dari browser ini. Lanjutkan?</div>',actions:[{label:'Batal',cancel:true},{label:'Hapus',type:'warning',onClick:()=>{localStorage.removeItem('jarvis-adafruit-settings');$('aioUser').value='';$('aioKey').value='';$('prefix').value='jarvis';$('cmdAuth').value='';$('apiBase').value='https://io.adafruit.com/api/v2';modalAlert('success','Settings Dihapus','Semua konfigurasi lokal dashboard sudah dihapus.')}}]})
-}
-function loadSettings(){
-  try{const s=JSON.parse(localStorage.getItem('jarvis-adafruit-settings')||'{}');
-    if(s.username)$('aioUser').value=s.username;
-    if(s.key)$('aioKey').value=s.key;
-    if(s.prefix)$('prefix').value=s.prefix;
-    if(s.cmdAuth)$('cmdAuth').value=s.cmdAuth;
-    if(s.apiBase)$('apiBase').value=s.apiBase;
-    if(s.pollMs)$('pollMs').value=String(s.pollMs);
-    if(s.offlineAfter)$('offlineAfter').value=String(s.offlineAfter);
-  }catch(e){}
-  renderFeeds();
-}
-function renderFeeds(){
-  $('feedList').innerHTML=FEEDS.map(f=>`<div class="feed-chip">${esc(feedKey(f))}</div>`).join('');
-}
-
-async function apiRead(resource,limit=3){
-  const c=cfg();
-  if(!c.username)throw new Error('Adafruit Username belum diisi.');
-  if(!c.key)throw new Error('AIO Key belum diisi.');
-
-  // GitHub Pages/static browser sering gagal kalau memakai header X-AIO-Key
-  // karena preflight CORS. Adafruit IO mendukung x-aio-key sebagai query parameter,
-  // jadi dashboard static memakai query parameter agar request lebih kompatibel.
-  const url=`${c.apiBase}/${encodeURIComponent(c.username)}/feeds/${encodeURIComponent(feedKey(resource))}/data?limit=${limit}&x-aio-key=${encodeURIComponent(c.key)}&_=${Date.now()}`;
-  const r=await fetch(url,{cache:'no-store',mode:'cors'});
-  if(!r.ok){let body='';try{body=await r.text()}catch(e){};throw new Error(`Read ${feedKey(resource)} gagal: HTTP ${r.status}${body?' - '+body.slice(0,180):''}`)}
-  return await r.json();
-}
-async function apiPublish(resource,value){
-  const c=cfg();
-  if(!c.username)throw new Error('Adafruit Username belum diisi.');
-  if(!c.key)throw new Error('AIO Key belum diisi.');
-
-  // Hindari header custom dan application/json agar browser tidak memicu preflight CORS.
-  // Adafruit IO Create Data mendukung form field "value".
-  const url=`${c.apiBase}/${encodeURIComponent(c.username)}/feeds/${encodeURIComponent(feedKey(resource))}/data?x-aio-key=${encodeURIComponent(c.key)}`;
-  const valueString=(typeof value==='string')?value:JSON.stringify(value);
-  const form=new FormData();
-  form.append('value',valueString);
-  const r=await fetch(url,{method:'POST',mode:'cors',body:form});
-  if(!r.ok){let body='';try{body=await r.text()}catch(e){};throw new Error(`Publish ${feedKey(resource)} gagal: HTTP ${r.status}${body?' - '+body.slice(0,220):''}`)}
-  try{return await r.json()}catch(e){return await r.text()}
-}
-async function testApi(){
-  try{modalLoading('Test API','Membaca feed heartbeat dari Adafruit IO...'); const data=await apiRead('heartbeat',1); modalOpen({type:'success',title:'API OK',subtitle:'Adafruit IO',body:`<div class="modal-box">Berhasil membaca feed <code>${feedKey('heartbeat')}</code>.</div><div class="raw">${esc(JSON.stringify(data,null,2))}</div>`,actions:[{label:'Tutup',cancel:true}]})}
-  catch(e){modalAlert('danger','API Gagal',esc(e.message))}
-}
-function parseValue(v){
-  if(v===undefined||v===null)return null;
-  if(typeof v==='object')return v;
-  const s=String(v).trim();
-  if(!s)return null;
-  try{return JSON.parse(s)}catch(e){return s}
-}
-function newestRecord(records){
-  if(!Array.isArray(records)||!records.length)return null;
-  return records.slice().sort((a,b)=>parseTs(b?.created_at ?? b?.createdAt ?? b?.created_epoch ?? b?.time)-parseTs(a?.created_at ?? a?.createdAt ?? a?.created_epoch ?? a?.time))[0] || null;
-}
-function firstData(records){
-  const r=newestRecord(records);
-  if(!r)return null;
-  if(r.value!==undefined)return parseValue(r.value);
-  if(r.data!==undefined)return parseValue(r.data);
-  return parseValue(r);
-}
-function parseTs(v){
-  if(v===undefined||v===null||v==='')return 0;
-  if(typeof v==='number')return v < 100000000000 ? v*1000 : v;
-  const asNum=Number(v); if(!Number.isNaN(asNum))return parseTs(asNum);
-  const d=Date.parse(v); return Number.isNaN(d)?0:d;
-}
-function tsOf(records){
-  const r=newestRecord(records)||{};
-  return parseTs(r.created_at ?? r.createdAt ?? r.created_epoch ?? r.time ?? r.updated_at);
-}
-async function refreshAll(manual=false){
-  if(refreshBusy) return;
-  const c=cfg();
-  if(!c.username || !c.key){renderOffline('Isi Adafruit Username dan AIO Key di Settings.'); return;}
-  refreshBusy=true;
-  try{
-    const resources=['status','heartbeat','telemetry','result','alerts','agent','audit'];
-    const [st,hb,tel,res,al,ag,au]=await Promise.allSettled(resources.map(x=>apiRead(x,3)));
-    if(st.status==='fulfilled'){state.status=firstData(st.value);state.statusTs=tsOf(st.value)}
-    if(hb.status==='fulfilled'){state.heartbeat=firstData(hb.value);state.heartbeatTs=tsOf(hb.value)}
-    if(tel.status==='fulfilled'){state.telemetry=firstData(tel.value);state.telemetryTs=tsOf(tel.value)}
-    if(res.status==='fulfilled'){state.result=firstData(res.value);state.resultTs=tsOf(res.value)}
-    if(al.status==='fulfilled'){state.alerts=firstData(al.value);state.alertTs=tsOf(al.value)}
-    if(ag.status==='fulfilled'){state.agent=firstData(ag.value);state.agentTs=tsOf(ag.value)}
-    if(au.status==='fulfilled'){state.audit=firstData(au.value);state.auditTs=tsOf(au.value)}
-    state.lastRefresh=Date.now();
-    render();
-    if(manual) toast('ok','Refresh OK','Data Adafruit IO berhasil dibaca.');
-  }catch(e){toast('critical','Refresh gagal',e.message); renderOffline(e.message)}
-  finally{refreshBusy=false}
-}
-function latestDeviceTs(){return Math.max(Number(state.heartbeatTs||0),Number(state.statusTs||0),Number(state.telemetryTs||0))}
-function hasDeviceData(){return !!(state.heartbeat || state.status || state.telemetry)}
-function render(){
-  const c=cfg();
-  const hb=state.heartbeat||state.status||{};
-  const tel=state.telemetry||{};
-  const latestTs=latestDeviceTs();
-  const age=latestTs?Math.max(0,Math.round((Date.now()-latestTs)/1000)):999999;
-  const online=hasDeviceData() && latestTs>0 && age<=c.offlineAfter && hb.online!==false;
-  $('onlinePill').className='pill '+(online?'':'off');
-  $('onlinePill').textContent=online?'ONLINE':'OFFLINE';
-  $('devName').textContent=hb.device||tel.device?.name||'JARVIS';
-  $('fw').textContent=hb.firmware||tel.runtime?.firmware||'-';
-  $('hbAge').textContent=latestTs?`${age}s`:'NO TS';
-  $('wifiRssi').textContent=(hb.rssi??tel.wifi?.rssi_dbm??'-')+' dBm';
-  $('wifiIp').textContent=hb.ip||tel.wifi?.local_ip||'-';
-  $('uptime').textContent=uptimeText(hb.uptime_sec||tel.runtime?.uptime_sec||0);
-  $('sideDevice').innerHTML=`User: ${esc(c.username||'-')}<br>Prefix: ${esc(c.prefix)}<br>IP: ${esc(hb.ip||tel.wifi?.local_ip||'-')}<br>RSSI: ${esc(hb.rssi??tel.wifi?.rssi_dbm??'-')} dBm<br>Last seen: ${latestTs?age+' detik lalu':'NO TIMESTAMP'}<br><span class="${online?'ok':'critical'}">${online?'CONNECTED':'OFFLINE'}</span>`;
-  renderTelemetry(tel); renderAgent(state.agent); renderAlerts();
-  $('lastResult').textContent=state.result?JSON.stringify(state.result,null,2):'Belum ada result.';
-}
-function renderOffline(msg){$('onlinePill').className='pill off';$('onlinePill').textContent='ERROR';$('sideDevice').innerHTML=`<span class="critical">${esc(msg)}</span>`}
-function renderTelemetry(t){
-  const mem=t?.memory||{}, hw=t?.hardware||{}, fl=t?.flash||{}, sk=t?.sketch||{}, wf=t?.wifi||{};
-  const hp=Number(mem.heap_used_percent||0);
-  $('heapPct').textContent=hp?hp.toFixed(1)+'%':'-'; $('heapBar').style.width=Math.min(100,hp)+'%';
-  $('heapText').textContent=`Used ${bytes(mem.heap_used_bytes)} / ${bytes(mem.heap_total_bytes)} • Free ${bytes(mem.heap_free_bytes)}`;
-  $('chip').textContent=hw.chip_model||'-'; $('chipText').textContent=`Core ${hw.chip_cores||'-'} • ${hw.cpu_freq_mhz||'-'} MHz • SDK ${hw.sdk_version||'-'}`;
-  $('flash').textContent=bytes(fl.flash_size_bytes); $('flashText').textContent=`Sketch ${bytes(sk.sketch_size_bytes)} • Free ${bytes(sk.free_sketch_space_bytes)}`;
-  $('net').textContent=wf.status||'-'; $('netText').textContent=`SSID ${wf.ssid||'-'} • IP ${wf.local_ip||'-'} • CH ${wf.channel||'-'}`;
-  $('rawTelemetry').textContent=t?JSON.stringify(t,null,2):'-';
-}
-function serviceOnline(agent,name){
-  const v=agent?.status?.[name]?.online;
-  if(v===true)return 'ON';
-  if(v===false)return 'OFF';
-  return '-';
-}
-function renderAgent(a){
-  $('agentOk').textContent=a?.ok===true?'OK':(a?.ok===false?'ERROR':'-');
-  $('agentLatency').textContent=a?.latency_ms!==undefined?`Latency ${a.latency_ms} ms • HTTP ${a.http_code??'-'}`:'-';
-  $('svcCloudflared').textContent=serviceOnline(a,'cloudflared');
-  $('svcStack').textContent=`N:${serviceOnline(a,'nginx')} P:${serviceOnline(a,'php')} M:${serviceOnline(a,'mysql')}`;
-  $('rawAgent').textContent=a?JSON.stringify(a,null,2):'-';
-}
-function renderAlerts(){
-  const c=cfg(), hb=state.heartbeat||state.status||{}, tel=state.telemetry||{}, latestTs=latestDeviceTs();
-  const age=latestTs?Math.max(0,Math.round((Date.now()-latestTs)/1000)):999999;
-  const arr=[];
-  if(!hasDeviceData() || !latestTs) arr.push({level:'critical',title:'Jarvis Offline',message:'Belum ada timestamp data device yang valid dari Adafruit IO.',source:'Dashboard'});
-  else if(age>c.offlineAfter) arr.push({level:'critical',title:'Jarvis Offline',message:`Data Jarvis terakhir ${age} detik lalu. Batas offline: ${c.offlineAfter} detik.`,source:'Dashboard'});
-  else arr.push({level:'ok',title:'Jarvis Online',message:`Data Jarvis baru. Last seen: ${age} detik lalu.`,source:'Adafruit IO'});
-  if((hb.rssi||tel.wifi?.rssi_dbm||0)<-75)arr.push({level:'warning',title:'Sinyal WiFi Lemah',message:`RSSI ${hb.rssi||tel.wifi?.rssi_dbm} dBm`,source:'WiFi'});
-  if(Number(tel.memory?.heap_used_percent||0)>80)arr.push({level:'warning',title:'Heap Tinggi',message:`Heap ${tel.memory.heap_used_percent}%`,source:'ESP32'});
-  if(state.alerts)arr.push(state.alerts);
-  $('alertBox').innerHTML=arr.map(a=>{const lv=norm(a.level);return `<div class="alert-card"><div style="display:flex;justify-content:space-between;gap:12px"><div><h3>${icon(lv)} ${esc(a.title||'Alert')}</h3><div class="muted">${esc(a.message||'-')}</div><div class="muted" style="margin-top:10px">${esc(a.source||'Jarvis')} • ${new Date().toLocaleTimeString()}</div></div><span class="badge ${lv}">${lv.toUpperCase()}</span></div></div>`}).join('');
-  $('auditLog').textContent=state.audit?JSON.stringify(state.audit,null,2):'-';
-}
-
-function commandMeta(command){return{
-  ping:{title:'Ping Jarvis',type:'info',desc:'Dashboard akan mengirim ping untuk mengecek respons Jarvis.',subtitle:'Connectivity test',danger:false},
-  power_on:{title:'Power On Server',type:'success',desc:'Jarvis akan menekan tombol power server melalui relay.',subtitle:'Emergency power control',danger:false},
-  hard_reset:{title:'Hard Reset Server',type:'warning',desc:'Server akan dipaksa hard reset melalui pin RESET_SW motherboard.',subtitle:'Aksi darurat • gunakan hanya jika server hang',danger:true},
-  force_power_off:{title:'Force Power Off',type:'danger',desc:'Server akan dimatikan paksa dengan simulasi tahan tombol power beberapa detik. Risiko kehilangan data.',subtitle:'Aksi berbahaya',danger:true,requireText:true},
-  reset_wifi_config:{title:'Reset WiFi Config',type:'warning',desc:'Konfigurasi WiFi Jarvis akan dihapus. Jarvis akan masuk mode setup AP.',subtitle:'Aksi sistem Jarvis',danger:true,requireText:true},
-  restart_jarvis:{title:'Restart Jarvis ESP32',type:'info',desc:'Controller ESP32 Jarvis akan direstart.',subtitle:'Controller restart',danger:false},
-  reboot_server:{title:'Reboot Server',type:'danger',desc:'Agent Linux akan diminta reboot server. Hanya berjalan jika agent masih online.',subtitle:'Software command',danger:true},
-  power_off:{title:'Power Off Server',type:'danger',desc:'Agent Linux akan diminta mematikan server. Hanya berjalan jika agent masih online.',subtitle:'Software command',danger:true}
-}[command]||{title:'Jalankan Command',type:'info',desc:`Jalankan command ${esc(command)}?`,subtitle:'Jarvis action',danger:false}}
-function guarded(command,duration){
-  const m=commandMeta(command);
-  const confirmId='confirmText'+Date.now();
-  const dangerous=['hard_reset','force_power_off','reset_wifi_config','reboot_server','power_off'];
-  const needText=m.requireText;
-  const confirmBox=needText?`<div class="modal-box"><b>Konfirmasi ekstra:</b><br>Ketik <code>YES_I_UNDERSTAND</code> untuk melanjutkan.<input id="${confirmId}" class="modal-input" placeholder="YES_I_UNDERSTAND" autocomplete="off"></div>`:'';
-  modalOpen({type:m.type,title:m.title,subtitle:m.subtitle,body:`<div class="modal-box"><div>${m.desc}</div><div class="modal-command">Command: ${esc(command)}</div></div>${confirmBox}`,actions:[{label:'Batal',cancel:true},{label:'Ya, Jalankan',type:m.type,onClick:()=>{if(needText&&($(confirmId).value||'').trim()!=='YES_I_UNDERSTAND'){modalAlert('warning','Konfirmasi Belum Sesuai','Ketik <b>YES_I_UNDERSTAND</b> dengan benar untuk menjalankan aksi ini.');return;}sendCommand(command,duration,{forceConfirm:dangerous.includes(command)});}}]})
-}
-async function sendCommand(command,duration,opt={}){
-  try{
-    const c=cfg(); if(!c.username||!c.key){modalAlert('warning','Setting Belum Lengkap','Isi Adafruit Username dan AIO Key di menu Settings.');return;}
-    modalLoading('Mengirim Command',`Mengirim command <b>${esc(command)}</b> ke feed <code>${feedKey('command')}</code>...`);
-    const request_id='CMD-'+Date.now();
-    const payload={request_id,command,source:'jarvis-adafruit-dashboard'};
-    if(c.cmdAuth)payload.auth=c.cmdAuth;
-    if(duration)payload.duration_ms=duration;
-    const dangerous=['hard_reset','force_power_off','reset_wifi_config','reboot_server','power_off'];
-    if(opt.forceConfirm || dangerous.includes(command))payload.confirm='YES_I_UNDERSTAND';
-    await apiPublish('command',payload);
-    modalOpen({type:'success',title:'Command Terkirim',subtitle:'Adafruit IO',body:`<div class="modal-box">Command <b>${esc(command)}</b> berhasil dikirim ke Jarvis.<div class="modal-command">Request ID: ${request_id}</div></div>`,actions:[{label:'Tutup',cancel:true},{label:'Refresh Status',type:'success',onClick:()=>refreshAll(true)}]});
-    setTimeout(()=>refreshAll(false),900); setTimeout(()=>refreshAll(false),2200); setTimeout(()=>refreshAll(false),4000);
-  }catch(e){modalOpen({type:'danger',title:'Command Gagal',subtitle:'Adafruit IO',body:`<div class="modal-box">${esc(e.message)}</div>`,actions:[{label:'Tutup',cancel:true}]})}
-}
-function toast(level,title,msg){const box=$('toast'), lv=norm(level);const div=document.createElement('div');div.className='alert-card '+lv;div.innerHTML=`<div style="display:flex;justify-content:space-between;gap:12px"><div><h3>${icon(lv)} ${esc(title)}</h3><div class="muted">${esc(msg)}</div></div><span class="badge ${lv}">${lv.toUpperCase()}</span></div>`;box.appendChild(div);setTimeout(()=>div.remove(),6500)}
-function norm(l){l=String(l||'info').toLowerCase();if(['error','danger','fatal','critical'].includes(l))return'critical';if(['warn','warning'].includes(l))return'warning';if(['ok','success','healthy'].includes(l))return'ok';return'info'}
-function icon(l){return l==='critical'?'⛔':l==='warning'?'⚠️':l==='ok'?'✅':'ℹ️'}
-function bytes(v){v=Number(v)||0;if(v>=1073741824)return(v/1073741824).toFixed(2)+' GB';if(v>=1048576)return(v/1048576).toFixed(2)+' MB';if(v>=1024)return(v/1024).toFixed(2)+' KB';return v+' B'}
-function uptimeText(sec){sec=Number(sec)||0;let d=Math.floor(sec/86400);sec%=86400;let h=Math.floor(sec/3600);sec%=3600;let m=Math.floor(sec/60);return(d?d+'d ':'')+h+'h '+m+'m'}
-function restartPolling(){if(pollTimer)clearInterval(pollTimer);pollTimer=setInterval(()=>refreshAll(false),cfg().pollMs)}
-$('jarvisModal').addEventListener('click',e=>{if(e.target.id==='jarvisModal')modalClose()});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')modalClose()});
-['prefix','pollMs','offlineAfter'].forEach(id=>$(id).addEventListener('change',()=>{renderFeeds();saveSettings()}));
-loadSettings();refreshAll(false);restartPolling();
+function Card({title,big,small}){return <div className="card"><h3>{title}</h3><div className="big">{big}</div><div className="muted">{small}</div></div>}
+function Field({label,value,onChange,type='text'}){return <div className="field"><label>{label}</label><input type={type} value={value??''} onChange={e=>onChange(e.target.value)}/></div>}
+function svc(agent,name){const v=agent?.status?.[name]?.online;if(v===true)return 'ON';if(v===false)return 'OFF';return '-'}
+function TelemetryCard({telemetry}){const mem=telemetry?.memory||{}, hw=telemetry?.hardware||{}, fl=telemetry?.flash||{}, wf=telemetry?.wifi||{};const hp=Number(mem.heap_used_percent||0);return <><div className="card"><h3>RAM / HEAP</h3><div className="big">{hp?hp.toFixed(1)+'%':'-'}</div><div className="bar"><div style={{width:Math.min(100,hp)+'%'}}></div></div><div className="muted">Used {bytes(mem.heap_used_bytes)} / {bytes(mem.heap_total_bytes)} • Free {bytes(mem.heap_free_bytes)}</div></div><Card title="CHIP" big={hw.chip_model||'-'} small={`Core ${hw.chip_cores||'-'} • ${hw.cpu_freq_mhz||'-'} MHz • SDK ${hw.sdk_version||'-'}`}/><Card title="FLASH" big={bytes(fl.flash_size_bytes)} small={`Speed ${fl.flash_speed_hz||'-'} Hz`}/><Card title="NETWORK" big={wf.status||'-'} small={`SSID ${wf.ssid||'-'} • IP ${wf.local_ip||'-'} • CH ${wf.channel||'-'}`}/></>}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
 </body>
 </html>
